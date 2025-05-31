@@ -8,6 +8,7 @@
 
     var thisType = new { Name = "Matrix", model.Size, model.Integral };
     var rowType = new { Name = "Vector", Size = size.Columns, model.Integral };
+    var columnType = new { Name = "Vector", Size = size.Rows, model.Integral };
 }}
 namespace Silk.NET.Maths
 {
@@ -16,6 +17,12 @@ namespace Silk.NET.Maths
 
     partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
     {
+        {{if size.Rows == size.Columns}}
+            /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
+            public static readonly {{@Name thisType}}<T> Identity = new({{each r in rows}}
+                new({{each c in cols}}{{if r == c}}T.MultiplicativeIdentity{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
+
+        {{/if}}
         {{each r in rows}}
             /// <summary>The {{@Ordinal r}} row of the matrix represented as a vector.</summary>
             public {{@Name rowType}}<T> Row{{= r}};
@@ -43,10 +50,14 @@ namespace Silk.NET.Maths
             }
         }
 
+        [UnscopedRef]
+        public ref {{@Name rowType}}<T> this[int row, int column] => ref this[row][column];
+
         {{each r in rows}}
             {{each c in cols}}
                 /// <summary>Gets the element in the {{@Ordinal r}} row and {{@Ordinal c}} column of the matrix.</summary>
-                public T M{{= r}}{{= c}} => Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
+                [UnscopedRef]
+                public ref T M{{= r}}{{= c}} => ref Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
 
             {{/each}}
         {{/each}}
@@ -59,6 +70,19 @@ namespace Silk.NET.Maths
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}});
 
+        {{
+            var transposeSize = new Dimension(Rows: size.Columns, Columns: size.Rows);
+        }}
+        {{if model.AllSizes.Contains(transposeSize)}}
+            {{
+                var transposeType = new { Name = "Matrix", Size = transposeSize, model.Integral };
+            }}
+            /// <summary>Computes the transpose of the matrix.</summary>
+            public {{@Name transposeType}}<T> Transpose() =>
+                new({{each c in cols}}new({{each r in rows}}M{{= r}}{{= c}}{{delimit}}, {{/each}}){{delimit}},
+                    {{/each}})
+
+        {{/if}}
         /// <summary>Returns a boolean indicating whether the given two matrices are equal.</summary>
         /// <param name="left">The first matrix to compare.</param>
         /// <param name="right">The second matrix to compare.</param>
@@ -87,6 +111,13 @@ namespace Silk.NET.Maths
         /// <returns>The result of the subtraction.</returns>
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each r in rows}}left.Row{{= r}} - right.Row{{= r}}{{delimit}},
+                {{/each}});
+
+        /// <summary>Returns a new matrix with the negated elements of the given matrix.</summary>
+        /// <param name="value">The source matrix.</param>
+        /// <returns>The negated matrix.</returns>
+        public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> value) =>
+            new({{each r in rows}}-value.Row{{= r}}{{delimit}},
                 {{/each}});
 
         {{each mul in model.MultiplyOperators}}
