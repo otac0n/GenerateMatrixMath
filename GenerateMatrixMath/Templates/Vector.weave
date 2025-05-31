@@ -71,6 +71,9 @@ namespace Silk.NET.Maths
             public static {{@Name thisType}}<T> AllBitsSet => new {{@Name thisType}}<T>({{each f in fields}}T.AllBitsSet{{delimit}}, {{/each}});
 
         {{/if}}
+        /// <summary>Gets the squared length of the vector (dot product with itself).</summary>
+        public T LengthSquared => {{@Name thisType}}.Dot(this, this);
+
         /// <inheritdoc/>
         T IReadOnlyList<T>.this[int index] => this[index];
 
@@ -410,6 +413,35 @@ namespace Silk.NET.Maths
 
     static partial class {{@Name thisType}}
     {
+        /// <summary>Computes the dot product of two vectors.</summary>
+        public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T> =>
+            {{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}} + {{/each}};
+
+        /// <summary>Reflects a vector over a normal vector.</summary>
+        public static {{@Name thisType}}<T> Reflect<T>({{@Name thisType}}<T> vector, {{@Name thisType}}<T> normal)
+            where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+        {
+            T dot = vector.Dot(normal);
+            return vector - (normal * (dot + dot));
+        }
+
+        {{if model.Integral}}
+        {{else}}
+            /// <summary>Computes the length of the vector.</summary>
+            public static T GetLength<T>(this {{@Name thisType}}<T> vector)
+                where T : IFloatingPointIeee754<T> =>
+                T.Sqrt(vector.LengthSquared);
+
+            /// <summary>Normalizes a vector.</summary>
+            public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
+                where T : IFloatingPointIeee754<T>
+            {
+                T length = vector.GetLength();
+                return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
+            }
+
+        {{/if}}
         {{each inter in model.Interfaces}}
             {{
                 var t = inter.GetGenericArguments().Single();
