@@ -18,6 +18,23 @@ namespace Silk.NET.Maths
         {{/each}}
         public {{@Name thisType}}({{each f in fields}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}{{= f.ToLower()}}{{delimit}}, {{/each}});
 
+        [UnscopedRef]
+        public ref T this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    {{each i in Enumerable.Range(0, size)}}
+                        case {{= i}}:
+                            return ref {{= Vector.VectorFieldNames[i]}};
+                    {{/each}}
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
         public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => {{each f in fields}}left.{{= f}} == right.{{= f}}{{delimit}} && {{/each}};
 
         public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);

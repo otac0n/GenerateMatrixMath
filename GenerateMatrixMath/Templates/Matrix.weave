@@ -51,7 +51,7 @@ namespace Silk.NET.Maths
         }
 
         [UnscopedRef]
-        public ref {{@Name rowType}}<T> this[int row, int column] => ref this[row][column];
+        public ref T this[int row, int column] => ref this[row][column];
 
         {{each r in rows}}
             {{each c in cols}}
