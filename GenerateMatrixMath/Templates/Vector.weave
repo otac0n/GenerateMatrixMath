@@ -8,16 +8,20 @@
 }}
 namespace Silk.NET.Maths
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
 
     partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
     {
         {{each f in fields}}
+            /// <summary>The {{= f}} component of the vector.</summary>
             public T {{= f}};
 
         {{/each}}
+        /// <summary>Initializes the vector with individual component values.</summary>
         public {{@Name thisType}}({{each f in fields}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}{{= f.ToLower()}}{{delimit}}, {{/each}});
 
+        ///<summary>Gets the component at the specified index: {{each i in Enumerable.Range(0, size)}}{{= i}} = {{= Vector.VectorFieldNames[i]}}{{delimit}}, {{/each}}. </summary>
         [UnscopedRef]
         public ref T this[int index]
         {
@@ -35,8 +39,18 @@ namespace Silk.NET.Maths
             }
         }
 
-        public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => {{each f in fields}}left.{{= f}} == right.{{= f}}{{delimit}} && {{/each}};
+        /// <summary>Returns a boolean indicating whether the given two vectors are equal.</summary>
+        /// <param name="left">The first vector to compare.</param>
+        /// <param name="right">The second vector to compare.</param>
+        /// <returns><c>true</c> if the given vectors are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
+            {{each f in fields}}left.{{= f}} == right.{{= f}}{{delimit}} &&
+            {{/each}};
 
+        /// <summary>Returns a boolean indicating whether the given two vectors are not equal.</summary>
+        /// <param name="left">The first vector to compare.</param>
+        /// <param name="right">The second vector to compare.</param>
+        /// <returns><c>true</c> if the given vectors are not equal; <c>false</c> otherwise.</returns>
         public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
 
         /// <inheridoc/>
