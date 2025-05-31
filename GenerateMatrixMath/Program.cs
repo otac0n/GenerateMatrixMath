@@ -66,6 +66,19 @@
                 Templates.RenderVector(model, writer);
                 Console.WriteLine($"Wrote {name}");
             }
+
+            var vectorExtensionModels =
+                (from d in sizes
+                 select new { Size = d, Sizes = sizes }).ToList();
+
+            foreach (var model in vectorExtensionModels)
+            {
+                var name = $"Vector{model.Size}Extensions";
+                var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                using var writer = new StreamWriter(path);
+                Templates.RenderFrameworkVectorExtensions(model, writer);
+                Console.WriteLine($"Wrote {name}");
+            }
         }
     }
 }

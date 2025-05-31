@@ -1,0 +1,27 @@
+@namespace GenerateMatrixMath
+@using GenerateMatrixMath.Model
+{{
+    var size = (int)model.Size;
+    var sizes = (IEnumerable<int>)model.Sizes;
+}}
+namespace Silk.NET.Maths
+{
+    using System.Numerics;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.Intrinsics;
+
+    public struct Swizzle{{= size}}(Vector{{= size}} storage)
+    {
+        {{each s in sizes.Where(s => s <= size)}}
+            {{each indices in PermuteDigits(s, size)}}
+                public readonly Vector{{= s}} {{each ix in indices}}{{= Vector.VectorFieldNames[ix]}}{{/each}}
+                {
+                    [MethodImpl((MethodImplOptions)768)]
+                    get => Vector128.Shuffle(storage.AsVector128(), Vector128.Create({{each i in Enumerable.Range(0, 4)}}{{= i < s ? indices[i] : 0}}{{delimit}}, {{/each}})).AsVector{{= s}}();
+                }
+            {{delimit}}
+
+            {{/each}}
+        {{/each}}
+    }
+}

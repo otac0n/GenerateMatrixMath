@@ -411,6 +411,28 @@ namespace Silk.NET.Maths
         {{/if}}
     }
 
+    {{
+        var swizzleType = new { Name = "Swizzle", model.Size, model.Integral };
+    }}
+    public struct {{@Name swizzleType}}<T>({{@Name thisType}}<T> storage)
+        where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+    {
+        {{each s in model.Sizes.Where(s => s <= size)}}
+            {{
+                var outputType = new { Name = "Vector", Size = s, model.Integral };
+            }}
+            {{each indices in PermuteDigits(s, size)}}
+                public {{@Name outputType}}<T> {{each ix in indices}}{{= Vector.VectorFieldNames[ix]}}{{/each}}
+                {
+                    [MethodImpl((MethodImplOptions)768)]
+                    get => new({{each ix in indices}}storage.{{= Vector.VectorFieldNames[ix]}}{{delimit}}, {{/each}});
+                }
+            {{delimit}}
+
+            {{/each}}
+        {{/each}}
+    }
+
     static partial class {{@Name thisType}}
     {
         /// <summary>Computes the dot product of two vectors.</summary>

@@ -14,6 +14,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <WeaveTemplate Include="Templates\FrameworkVectorExtensions.weave" />
     <WeaveTemplate Include="Templates\Matrix.weave" />
     <WeaveTemplate Include="Templates\Name.weave" />
     <WeaveTemplate Include="Templates\Vector.weave" />

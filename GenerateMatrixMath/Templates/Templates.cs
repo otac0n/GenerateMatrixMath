@@ -15,7 +15,10 @@
 
         public static string Ordinal(int num)
         {
-            if (num <= 0) return num.ToString();
+            if (num <= 0)
+            {
+                return num.ToString();
+            }
 
             switch (num % 100)
             {
@@ -38,5 +41,29 @@
             }
         }
 
+        public static IEnumerable<int[]> PermuteDigits(int digits, int maxValue)
+        {
+            var indices = new int[digits];
+            bool Increment()
+            {
+                for (var ix = 0; ix < digits; ix++)
+                {
+                    indices[ix]++;
+                    if (indices[ix] < maxValue)
+                    {
+                        return false;
+                    }
+
+                    indices[ix] = 0;
+                }
+
+                return true;
+            }
+
+            do
+            {
+                yield return indices.ToArray();
+            } while (!Increment());
+        }
     }
 }
