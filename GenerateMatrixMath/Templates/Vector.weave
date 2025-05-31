@@ -16,6 +16,8 @@ namespace Silk.NET.Maths
             public T {{= f}};
 
         {{/each}}
+        public {{@Name thisType}}({{each f in fields}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}{{= f.ToLower()}}{{delimit}}, {{/each}});
+
         public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => {{each f in fields}}left.{{= f}} == right.{{= f}}{{delimit}} && {{/each}};
 
         public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
@@ -28,5 +30,29 @@ namespace Silk.NET.Maths
 
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each f in fields}}{{= f}}{{delimit}}, {{/each}});
+    }
+
+    static partial class {{@Name thisType}}
+    {
+        {{each inter in model.Interfaces}}
+            {{
+                var t = inter.GetGenericArguments().Single();
+                var interName = inter.Name;
+                var backTickIndex = interName.IndexOf('`');
+                if (backTickIndex > 0)
+                {
+                    interName = interName.Substring(0, backTickIndex);
+                }
+            }}
+            {{each method in inter.GetMethods()}}
+                public static {{@Name thisType}}<{{= t}}> {{= method.Name}}<{{= t}}>(this {{each p in method.GetParameters()}}{{@Name thisType}}<{{= p.ParameterType}}> {{= p.Name}}{{delimit}}, {{/each}})
+                    where {{= t}} : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<{{= t}}>, {{= interName}}<{{= t}}> =>
+                    new({{each f in fields}}{{= t}}.{{= method.Name}}({{each p in method.GetParameters()}}{{= p.Name}}.{{= f}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
+            {{delimit}}
+
+            {{/each}}
+        {{delimit}}
+
+        {{/each}}
     }
 }

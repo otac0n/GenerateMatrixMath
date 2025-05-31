@@ -2,7 +2,7 @@
 {
     using System.Collections.Immutable;
 
-    public record class Vector(int Size, bool Integral)
+    public record class Vector(int Size, bool Integral, IEnumerable<Type> Interfaces)
     {
         public static readonly ImmutableList<string> VectorFieldNames = ["X", "Y", "Z", "W"];
     }

@@ -42,10 +42,16 @@
                 Console.WriteLine($"Wrote {name}");
             }
 
+            var interfaces = new[]
+            {
+                typeof(System.Numerics.ILogarithmicFunctions<>),
+                typeof(System.Numerics.IExponentialFunctions<>),
+            };
+
             var vectorModels =
                 (from d in Enumerable.Range(2, 3)
                  from integral in new[] { true, false }
-                 select new Vector(d, integral)).ToList();
+                 select new Vector(d, integral, interfaces)).ToList();
 
             foreach (var model in vectorModels)
             {
