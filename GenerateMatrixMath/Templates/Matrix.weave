@@ -1,0 +1,88 @@
+@namespace GenerateMatrixMath
+@using GenerateMatrixMath.Model
+@model Matrix
+{{
+    var size = model.Size;
+    var rows = Enumerable.Range(1, size.Rows);
+    var cols = Enumerable.Range(1, size.Columns);
+
+    var thisType = new { Name = "Matrix", model.Size, model.Integral };
+    var rowType = new { Name = "Vector", Size = size.Columns, model.Integral };
+}}
+namespace Silk.NET.Maths
+{
+    using System.Diagnostics.CodeAnalysis;
+    using System.Numerics;
+
+    partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+    {
+        {{each r in rows}}
+            /// <summary>The {{@Ordinal r}} row of the matrix represented as a vector.</summary>
+            public {{@Name rowType}}<T> Row{{= r}};
+        {{/each}}
+        public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) => ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
+        [UnscopedRef]
+        public ref {{@Name rowType}}<T> this[int row]
+        {
+            get
+            {
+                switch (row)
+                {
+                    {{each r in rows}}
+                        case {{= r - 1}}:
+                            return ref Row{{= r}};
+                    {{/each}}
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(row));
+            }
+        }
+
+        {{each r in rows}}
+            {{each c in cols}}
+                /// <summary>Gets the element in the {{@Ordinal r}} row and {{@Ordinal c}} column of the matrix.</summary>
+                public T M{{= r}}{{= c}} => Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
+            {{/each}}
+        {{/each}}
+        /// <inheridoc/>
+        public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
+        /// <inheridoc/>
+        public bool Equals({{@Name thisType}}<T> other) => this == other;
+        /// <inheridoc/>
+        public override int GetHashCode() => HashCode.Combine({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}});
+        /// <summary>Returns a boolean indicating whether the given two matrices are equal.</summary>
+        /// <param name = "left">The first matrix to compare.</param>
+        /// <param name = "right">The second matrix to compare.</param>
+        /// <returns><c>true</c> if the given matrices are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => {{each r in rows}}left.Row{{= r}} == right.Row{{= r}}{{delimit}} && {{/each}};
+        /// <summary>Returns a boolean indicating whether the given two matrices are not equal.</summary>
+        /// <param name = "left">The first matrix to compare.</param>
+        /// <param name = "right">The second matrix to compare.</param>
+        /// <returns><c>true</c> if the given matrices are not equal; <c>false</c> otherwise.</returns>
+        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
+        /// <summary>Adds two matrices together.</summary>
+        /// <param name = "left">The first source matrix.</param>
+        /// <param name = "right">The second source matrix.</param>
+        /// <returns>The result of the addition.</returns>
+        public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => new({{each r in rows}}left.Row{{= r}} + right.Row{{= r}}{{delimit}}, {{/each}});
+        /// <summary>Subtracts the second matrix from the first.</summary>
+        /// <param name = "left">The first source matrix.</param>
+        /// <param name = "right">The second source matrix.</param>
+        /// <returns>The result of the subtraction.</returns>
+        public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => new({{each r in rows}}left.Row{{= r}} - right.Row{{= r}}{{delimit}}, {{/each}});
+        {{each mul in model.MultiplyOperators}}
+            {{
+                var middleSize = mul.Left.Columns;
+                var outputSize = new Dimension(mul.Left.Rows, mul.Right.Columns);
+                var outputType = new { Name = "Matrix", Size = outputSize, model.Integral };
+                var leftType = new { Name = "Matrix", Size = mul.Left, model.Integral };
+                var rightType = new { Name = "Matrix", Size = mul.Right, model.Integral };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name = "left">The first source matrix.</param>
+            /// <param name = "right">The second source matrix.</param>
+            /// <returns>The result of the multiplication.</returns>
+            public static {{@Name outputType}}<T> operator *({{@Name leftType}}<T> left, {{@Name rightType}}<T> right) => new({{each r in Enumerable.Range(1, outputSize.Rows)}}{{each m in Enumerable.Range(1, middleSize)}}left.M{{= r}}{{= m}} * right.Row{{= m}}{{delimit}} + {{/each}}{{delimit}}, {{/each}});
+        {{/each}}
+    }
+}

@@ -1,0 +1,2 @@
+@namespace GenerateMatrixMath
+{{= model.Name}}{{= model.Size}}{{if model.Integral}}I{{else}}F{{/if}}
