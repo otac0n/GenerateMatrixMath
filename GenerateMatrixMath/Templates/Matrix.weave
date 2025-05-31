@@ -80,7 +80,7 @@ namespace Silk.NET.Maths
             /// <summary>Computes the transpose of the matrix.</summary>
             public {{@Name transposeType}}<T> Transpose() =>
                 new({{each c in cols}}new({{each r in rows}}M{{= r}}{{= c}}{{delimit}}, {{/each}}){{delimit}},
-                    {{/each}})
+                    {{/each}});
 
         {{/if}}
         /// <summary>Returns a boolean indicating whether the given two matrices are equal.</summary>
@@ -139,4 +139,14 @@ namespace Silk.NET.Maths
 
         {{/each}}
     }
+
+    {{if !model.Integral}}
+        static partial class {{@Name thisType}}
+        {
+            public static {{@Name thisType}}<T> Lerp<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
+                where T : IFloatingPointIeee754<T> =>
+                new({{each r in rows}}new({{each c in cols}}T.Lerp(value1.M{{= r}}{{= c}}, value2.M{{= r}}{{= c}}, amount){{delimit}}, {{/each}}){{delimit}},
+                    {{/each}});
+        }
+    {{/if}}
 }
