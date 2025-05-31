@@ -8,18 +8,28 @@
 }}
 namespace Silk.NET.Maths
 {
+    using System.Collections;
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
 
-    partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+    partial struct {{@Name thisType}}<T> :
+        IEquatable<{{@Name thisType}}<T>>,
+        IReadOnlyList<T>
+        where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
     {
         {{each f in fields}}
             /// <summary>The {{= f}} component of the vector.</summary>
             public T {{= f}};
 
         {{/each}}
+        /// <summary>Initializes all components of the vector to the same value.</summary>
+        public {{@Name thisType}}(T value) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}value{{delimit}}, {{/each}});
+
         /// <summary>Initializes the vector with individual component values.</summary>
         public {{@Name thisType}}({{each f in fields}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}{{= f.ToLower()}}{{delimit}}, {{/each}});
+
+        /// <inheritdoc/>
+        T IReadOnlyList<T>.this[int index] => this[index];
 
         ///<summary>Gets the component at the specified index: {{each i in Enumerable.Range(0, size)}}{{= i}} = {{= Vector.VectorFieldNames[i]}}{{delimit}}, {{/each}}. </summary>
         [UnscopedRef]
@@ -37,6 +47,20 @@ namespace Silk.NET.Maths
 
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
+        }
+
+        /// <summary>The number of elements in the vector.</summary>
+        public int Count => {{= size}};
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary> Returns an enumerator that iterates through the vector components.</summary>
+        public IEnumerator<T> GetEnumerator()
+        {
+            {{each field in fields}}
+                yield return {{= field}};
+            {{/each}}
         }
 
         /// <summary>Returns a boolean indicating whether the given two vectors are equal.</summary>

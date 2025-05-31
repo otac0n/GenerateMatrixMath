@@ -15,7 +15,9 @@ namespace Silk.NET.Maths
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
 
-    partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+    partial struct {{@Name thisType}}<T> :
+        IEquatable<{{@Name thisType}}<T>>
+        where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
     {
         {{if size.Rows == size.Columns}}
             /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
