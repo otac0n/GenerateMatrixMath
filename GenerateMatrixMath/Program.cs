@@ -31,14 +31,32 @@
             var matrixModels =
                 (from d in dims
                  from integral in new[] { true, false }
-                 select new Matrix(d, integral, multiplicationOperators[d])).ToList();
+                 select new Matrix(d, integral, dims, multiplicationOperators[d])).ToList();
 
             foreach (var model in matrixModels)
             {
                 var name = Templates.Name(new { Name = "Matrix", model.Size, model.Integral });
-                using var writer = new StreamWriter(Path.Combine(outputPath, $"{name}.gen.cs"));
+                var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                using var writer = new StreamWriter(path);
                 Templates.RenderMatrix(model, writer);
                 Console.WriteLine($"Wrote {name}");
+            }
+
+            var vectorModels =
+                (from d in Enumerable.Range(2, 3)
+                 from integral in new[] { true, false }
+                 select new Vector(d, integral)).ToList();
+
+            foreach (var model in vectorModels)
+            {
+                var name = Templates.Name(new { Name = "Vector", model.Size, model.Integral });
+                var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                if (Path.Exists(path))
+                {
+                    using var writer = new StreamWriter(path);
+                    Templates.RenderVector(model, writer);
+                    Console.WriteLine($"Wrote {name}");
+                }
             }
         }
     }

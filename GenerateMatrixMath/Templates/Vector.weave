@@ -1,0 +1,32 @@
+@namespace GenerateMatrixMath
+@using GenerateMatrixMath.Model
+@model Vector
+{{
+    var size = model.Size;
+    var fields = Vector.VectorFieldNames.Take(size);
+    var thisType = new { Name = "Vector", model.Size, model.Integral };
+}}
+namespace Silk.NET.Maths
+{
+    using System.Numerics;
+
+    partial struct {{@Name thisType}}<T> : IEquatable<{{@Name thisType}}<T>> where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+    {
+        {{each f in fields}}
+            public T {{= f}};
+
+        {{/each}}
+        public static bool operator ==({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => {{each f in fields}}left.{{= f}} == right.{{= f}}{{delimit}} && {{/each}};
+
+        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
+
+        /// <inheridoc/>
+        public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
+
+        /// <inheridoc/>
+        public bool Equals({{@Name thisType}}<T> other) => this == other;
+
+        /// <inheridoc/>
+        public override int GetHashCode() => HashCode.Combine({{each f in fields}}{{= f}}{{delimit}}, {{/each}});
+    }
+}

@@ -16,6 +16,7 @@
   <ItemGroup>
     <WeaveTemplate Include="Templates\Matrix.weave" />
     <WeaveTemplate Include="Templates\Name.weave" />
+    <WeaveTemplate Include="Templates\Vector.weave" />
     <None Remove="Matrix.weave" />
   </ItemGroup>
 </Project>
