@@ -36,6 +36,14 @@ namespace Silk.NET.Maths
         /// <summary>Initializes the vector with individual component values.</summary>
         public {{@Name thisType}}({{each f in fields}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}{{= f.ToLower()}}{{delimit}}, {{/each}});
 
+        {{each s in model.Sizes.Where(s => s < size)}}
+            {{
+                var otherType = new { Name = "Vector", Size = s, model.Integral };
+            }}
+            /// <summary> Initializes the vector using a <see cref="{{@Name otherType}}{T}"/> for the initial elements, and the specified {{if size - s == 1}}component{{else}}components{{/if}} for the remainder. </summary>
+            public {{@Name thisType}}({{@Name otherType}}<T> other, {{each f in fields.Skip(s)}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each i in Enumerable.Range(0, size)}}{{ var f = Vector.VectorFieldNames[i]; }}{{if i < s}}other.{{= f}}{{else}}{{= f.ToLower()}}{{/if}}{{delimit}}, {{/each}});
+
+        {{/each}}
         /// <summary>Initializes the vector from a span of {{= size}} values.</summary>
         public {{@Name thisType}}(ReadOnlySpan<T> values)
         {

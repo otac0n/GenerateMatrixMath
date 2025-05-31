@@ -44,25 +44,27 @@
 
             var interfaces = new[]
             {
+                //typeof(System.Numerics.IRootFunctions<>),
+                //typeof(System.Numerics.IPowerFunctions<>),
                 typeof(System.Numerics.ILogarithmicFunctions<>),
                 typeof(System.Numerics.IExponentialFunctions<>),
+                //typeof(System.Numerics.ITrigonometricFunctions<>),
+                //typeof(System.Numerics.IHyperbolicFunctions<>),
             };
 
+            var sizes = Enumerable.Range(2, 3);
             var vectorModels =
-                (from d in Enumerable.Range(2, 3)
+                (from d in sizes
                  from integral in new[] { true, false }
-                 select new Vector(d, integral, interfaces)).ToList();
+                 select new Vector(d, integral, sizes, interfaces)).ToList();
 
             foreach (var model in vectorModels)
             {
                 var name = Templates.Name(new { Name = "Vector", model.Size, model.Integral });
                 var path = Path.Combine(outputPath, $"{name}.gen.cs");
-                if (Path.Exists(path))
-                {
-                    using var writer = new StreamWriter(path);
-                    Templates.RenderVector(model, writer);
-                    Console.WriteLine($"Wrote {name}");
-                }
+                using var writer = new StreamWriter(path);
+                Templates.RenderVector(model, writer);
+                Console.WriteLine($"Wrote {name}");
             }
         }
     }
