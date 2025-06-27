@@ -1,6 +1,8 @@
 ﻿namespace GenerateMatrixMath
 {
+    using System.Numerics;
     using GenerateMatrixMath.Model;
+    using static GenerateMatrixMath.Model.ArgumentMultiplicity;
 
     internal class Program
     {
@@ -42,21 +44,86 @@
                 Console.WriteLine($"Wrote {name}");
             }
 
-            var interfaces = new[]
+            var extensions = new Extension[]
             {
-                //typeof(System.Numerics.IRootFunctions<>),
-                //typeof(System.Numerics.IPowerFunctions<>),
-                typeof(System.Numerics.ILogarithmicFunctions<>),
-                typeof(System.Numerics.IExponentialFunctions<>),
-                //typeof(System.Numerics.ITrigonometricFunctions<>),
-                //typeof(System.Numerics.IHyperbolicFunctions<>),
+                // INumber<>
+                new(typeof(INumber<>), nameof(INumber<>.Sign), [Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.Max), [Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.Max), [Memberwise, One]),
+                new(typeof(INumber<>), nameof(INumber<>.Min), [Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.Min), [Memberwise, One]),
+                new(typeof(INumber<>), nameof(INumber<>.Clamp), [Memberwise, Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.Clamp), [Memberwise, One, One]),
+                new(typeof(INumber<>), nameof(INumber<>.CopySign), [Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.CopySign), [Memberwise, One]),
+
+                // INumberBase<>
+                new(typeof(INumberBase<>), nameof(INumberBase<>.Abs), [Memberwise]),
+
+                // IBinaryNumber<>
+                new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
+
+                // IFloatingPointIeee754<>
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Lerp), [Memberwise, Memberwise, One]),
+
+                // IPowerFunctions<>
+                new(typeof(IPowerFunctions<>), nameof(IPowerFunctions<>.Pow), [Memberwise, One]),
+                new(typeof(IPowerFunctions<>), nameof(IPowerFunctions<>.Pow), [Memberwise, Memberwise]),
+
+                // IRootFunctions<>
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Cbrt), [Memberwise]),
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Sqrt), [Memberwise]),
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.RootN), [Memberwise, One]),
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.RootN), [Memberwise, Memberwise]),
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Hypot), [Memberwise, Memberwise]),
+
+                // ILogarithmicFunctions<>,
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log), [Memberwise, One]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.LogP1), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log2), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log2P1), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log10), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log10P1), [Memberwise]),
+
+                // IExponentialFunctions<>
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.Exp), [Memberwise]),
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.ExpM1), [Memberwise]),
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.Exp2), [Memberwise]),
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.Exp2M1), [Memberwise]),
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.Exp10), [Memberwise]),
+                new(typeof(IExponentialFunctions<>), nameof(IExponentialFunctions<>.Exp10M1), [Memberwise]),
+
+                //ITrigonometricFunctions<>
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Acos), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.AcosPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Asin), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.AsinPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Atan), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.AtanPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Cos), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.CosPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Sin), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.SinPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Tan), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.TanPi), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.DegreesToRadians), [Memberwise]),
+                new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.RadiansToDegrees), [Memberwise]),
+
+                //IHyperbolicFunctions<>
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Acosh), [Memberwise]),
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Asinh), [Memberwise]),
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Atanh), [Memberwise]),
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Cosh), [Memberwise]),
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Sinh), [Memberwise]),
+                new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Tanh), [Memberwise]),
             };
 
             var sizes = Enumerable.Range(2, 3);
             var vectorModels =
                 (from d in sizes
                  from integral in new[] { true, false }
-                 select new Vector(d, integral, sizes, interfaces)).ToList();
+                 select new Model.Vector(d, integral, sizes, extensions)).ToList();
 
             foreach (var model in vectorModels)
             {
