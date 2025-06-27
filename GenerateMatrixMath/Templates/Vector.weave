@@ -6,6 +6,7 @@
     var size = model.Size;
     var fields = Vector.VectorFieldNames.Take(size);
     var thisType = new { Name = "Vector", model.Size, model.Integral };
+    var oppositeType = new { Name = "Vector", model.Size, Integral = !model.Integral };
 }}
 namespace Silk.NET.Maths
 {
@@ -339,44 +340,63 @@ namespace Silk.NET.Maths
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each f in fields}}{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Desconstructs a vector into its components.</summary>
+        {{each f in fields}}
+            /// <param name="{{= f.ToLower()}}">The {{= f}} component.</param>
+        {{/each}}
+        public void Deconstruct({{each f in fields}}out T {{= f.ToLower()}}{{delimit}}, {{/each}})
+        {
+            {{each f in fields}}
+                {{= f.ToLower()}} = {{= f}};
+            {{/each}}
+        }
+
+        /// <summary>Implicitly casts a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
+        public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) v) =>
+            new({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
+
+        /// <summary>Implicitly casts a <see cref="{{@Name thisType}}{T}"/> to a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/>.</summary>
+        public static implicit operator ({{each f in fields}}T {{= f}}{{delimit}}, {{/each}})({{@Name thisType}}<T> v) =>
+            ({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
+
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> vector) =>
             vector;
 
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> vector) =>
-            new {{@Name thisType}}<T>({{each f in fields}}-vector.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}-vector.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} + right.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}left.{{= f}} + right.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} - right.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}left.{{= f}} - right.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator *({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} / right.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}left.{{= f}} / right.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} % right.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}left.{{= f}} % right.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> vector, T scalar) =>
-            new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} + scalar{{delimit}}, {{/each}});
+            new({{each f in fields}}vector.{{= f}} + scalar{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> vector, T scalar) =>
-            new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} - scalar{{delimit}}, {{/each}});
+            new({{each f in fields}}vector.{{= f}} - scalar{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator *({{@Name thisType}}<T> vector, T scalar) =>
-            new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} * scalar{{delimit}}, {{/each}});
+            new({{each f in fields}}vector.{{= f}} * scalar{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator *(T scalar, {{@Name thisType}}<T> vector) =>
-            new {{@Name thisType}}<T>({{each f in fields}}scalar * vector.{{= f}}{{delimit}}, {{/each}});
+            new({{each f in fields}}scalar * vector.{{= f}}{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> vector, T scalar) =>
-            new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
+            new({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
 
         public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> vector, T scalar) =>
-            new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} % scalar{{delimit}}, {{/each}});
+            new({{each f in fields}}vector.{{= f}} % scalar{{delimit}}, {{/each}});
 
         {{if model.Integral}}
             public static {{@Name thisType}}<T> operator ~({{@Name thisType}}<T> vector) =>
