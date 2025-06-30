@@ -1,4 +1,5 @@
 @namespace GenerateMatrixMath
+@encode Encode
 @using System.Reflection
 @using GenerateMatrixMath.Model
 @model Vector
@@ -469,8 +470,14 @@ namespace Silk.NET.Maths
         {{each extension in model.Extensions.Where(e => baseInterface == e.Type || baseInterface.GetInterfaces().Select(i => i.IsGenericType && !i.IsGenericTypeDefinition ? i.GetGenericTypeDefinition() : i).Contains(e.Type))}}
             {{
                 var inter = extension.Type;
-                var name = extension.Name;
                 var t = inter.GetGenericArguments().Single();
+
+                object MapType(Type type) =>
+                    type == t ? thisType :
+                    type == typeof(int) ? new { Name = "Vector", model.Size, Integral = true } :
+                    throw new NotImplementedException();
+
+                var name = extension.Name;
                 var interName = inter.Name;
                 var backTickIndex = interName.IndexOf('`');
                 if (backTickIndex > 0)
@@ -482,33 +489,26 @@ namespace Silk.NET.Maths
                 var arguments = parameters.Select((p, i) =>
                 {
                     var memberwise = extension.Arguments[i] == ArgumentMultiplicity.Memberwise;
-                    var type = p.ParameterType.ToCSharpString();
                     return new
                     {
                         Memberwise = memberwise,
-                        Type = type,
-                        VectorType = !memberwise ? null :
-                                     type == t.ToString() ? thisType :
-                                     type == "int" ? new { Name = "Vector", model.Size, Integral = true } :
-                                     throw new NotImplementedException(),
+                        Type = p.ParameterType,
+                        VectorType = !memberwise ? null : MapType(p.ParameterType),
                         p.Name,
                     };
                 });
-                var returnType = method.ReturnType.ToCSharpString();
-                var returnVectorType =
-                    returnType == t.ToString() ? thisType :
-                    returnType == "int" ? new { Name = "Vector", model.Size, Integral = true } :
-                    throw new NotImplementedException();
+                var returnType = method.ReturnType;
+                var returnVectorType = MapType(returnType);
             }}
-            /// <summary>Applies <see cref="{{= inter.ToCSharpString().Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= a.Type}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
+            /// <summary>Applies <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= Encode(a.Type).Replace('<', '{').Replace('>', '}')}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
             {{each a in arguments}}
                 {{if a.Memberwise}}
                     /// <param name="{{= a.Name}}">A vector whose members will be provided for <parameref name="{{= a.Name}}"/>.</param>
                 {{else}}
-                    /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/> .</param>
+                    /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
                 {{/if}}
             {{/each}}
-            public static {{@Name returnVectorType}}<{{= returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name a.VectorType}}<{{body}}{{= a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
+            public static {{@Name returnVectorType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name a.VectorType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
                 where {{= t}} : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<{{= t}}> =>
                 new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
         {{delimit}}

@@ -2,6 +2,14 @@
 {
     partial class Templates
     {
+        private static Dictionary<Type, string> NameCache = new();
+
+        private static string Encode(object value) => value switch
+        {
+            Type type => NameCache.TryGetValue(type, out var name) ? name : NameCache[type] = type.ToCSharpString(),
+            _ => value?.ToString() ?? "",
+        };
+
         public static string Name(dynamic model)
         {
             using var writer = new StringWriter();

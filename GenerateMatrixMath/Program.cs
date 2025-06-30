@@ -8,8 +8,6 @@
     {
         static void Main()
         {
-            var outputPath = @"C:\Users\otac0n\Projects\Silk.NET\sources\Maths\Maths\";
-
             var dims = new HashSet<Dimension>();
             for (var r = 1; r < 4; r++)
             {
@@ -50,8 +48,12 @@
                 new(typeof(INumber<>), nameof(INumber<>.Sign), [Memberwise]),
                 new(typeof(INumber<>), nameof(INumber<>.Max), [Memberwise, Memberwise]),
                 new(typeof(INumber<>), nameof(INumber<>.Max), [Memberwise, One]),
+                new(typeof(INumber<>), nameof(INumber<>.MaxNumber), [Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.MaxNumber), [Memberwise, One]),
                 new(typeof(INumber<>), nameof(INumber<>.Min), [Memberwise, Memberwise]),
                 new(typeof(INumber<>), nameof(INumber<>.Min), [Memberwise, One]),
+                new(typeof(INumber<>), nameof(INumber<>.MinNumber), [Memberwise, Memberwise]),
+                new(typeof(INumber<>), nameof(INumber<>.MinNumber), [Memberwise, One]),
                 new(typeof(INumber<>), nameof(INumber<>.Clamp), [Memberwise, Memberwise, Memberwise]),
                 new(typeof(INumber<>), nameof(INumber<>.Clamp), [Memberwise, One, One]),
                 new(typeof(INumber<>), nameof(INumber<>.CopySign), [Memberwise, Memberwise]),
@@ -59,16 +61,46 @@
 
                 // INumberBase<>
                 new(typeof(INumberBase<>), nameof(INumberBase<>.Abs), [Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MaxMagnitude), [Memberwise, Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MaxMagnitudeNumber), [Memberwise, Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MinMagnitude), [Memberwise, Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MinMagnitudeNumber), [Memberwise, Memberwise]),
+                //new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, Memberwise, Memberwise]), // DOTNET>=9
+                //new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, One, One]), // DOTNET>=9
 
                 // IBinaryNumber<>
                 new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
 
+                // IBinaryInteger<>
+                new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.PopCount), [Memberwise]),
+                new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.TrailingZeroCount), [Memberwise]),
+
+                // IFloatingPoint<>
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Ceiling), [Memberwise]),
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Floor), [Memberwise]),
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Round), [Memberwise]),
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Round), [Memberwise, One, One]),
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Truncate), [Memberwise]),
+
                 // IFloatingPointIeee754<>
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Atan2), [Memberwise, Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Atan2Pi), [Memberwise, Memberwise]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Lerp), [Memberwise, Memberwise, One]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.BitDecrement), [Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.BitIncrement), [Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, Memberwise, Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, One, One]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Ieee754Remainder), [Memberwise, Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Ieee754Remainder), [Memberwise, One]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.ILogB), [Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.ReciprocalEstimate), [Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.ReciprocalSqrtEstimate), [Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.ScaleB), [Memberwise, Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.ScaleB), [Memberwise, One]),
 
                 // IPowerFunctions<>
-                new(typeof(IPowerFunctions<>), nameof(IPowerFunctions<>.Pow), [Memberwise, One]),
                 new(typeof(IPowerFunctions<>), nameof(IPowerFunctions<>.Pow), [Memberwise, Memberwise]),
+                new(typeof(IPowerFunctions<>), nameof(IPowerFunctions<>.Pow), [Memberwise, One]),
 
                 // IRootFunctions<>
                 new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Cbrt), [Memberwise]),
