@@ -4,12 +4,13 @@
 @using GenerateMatrixMath.Model
 @model Vector
 {{
+    var options = model.Options;
     var size = model.Size;
     var fields = Vector.VectorFieldNames.Take(size);
     var thisType = new { Name = "Vector", model.Size, model.Integral };
     var oppositeType = new { Name = "Vector", model.Size, Integral = !model.Integral };
 }}
-namespace Silk.NET.Maths
+namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{/if}}
 {
     using System.Collections;
     using System.Diagnostics.CodeAnalysis;
@@ -26,7 +27,7 @@ namespace Silk.NET.Maths
         ISpanParsable<{{@Name thisType}}<T>>,
         IUtf8SpanFormattable,
         IUtf8SpanParsable<{{@Name thisType}}<T>>
-        where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+        where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
     {
         {{each f in fields}}
             /// <summary>The {{= f}} component of the vector.</summary>
@@ -69,7 +70,7 @@ namespace Silk.NET.Maths
             public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
 
         {{/each}}
-        {{if model.Integral}}
+        {{if model.Integral == true}}
             /// <summary>Gets a vector with all bits set for each component.</summary>
             public static {{@Name thisType}}<T> AllBitsSet => new {{@Name thisType}}<T>({{each f in fields}}T.AllBitsSet{{delimit}}, {{/each}});
 
@@ -378,9 +379,6 @@ namespace Silk.NET.Maths
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each f in fields}}left.{{= f}} / right.{{= f}}{{delimit}}, {{/each}});
 
-        public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-            new({{each f in fields}}left.{{= f}} % right.{{= f}}{{delimit}}, {{/each}});
-
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} + scalar{{delimit}}, {{/each}});
 
@@ -396,10 +394,7 @@ namespace Silk.NET.Maths
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
 
-        public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> vector, T scalar) =>
-            new({{each f in fields}}vector.{{= f}} % scalar{{delimit}}, {{/each}});
-
-        {{if model.Integral}}
+        {{if model.Integral == true}}
             public static {{@Name thisType}}<T> operator ~({{@Name thisType}}<T> vector) =>
                 new {{@Name thisType}}<T>({{each f in fields}}~vector.{{= f}}{{delimit}}, {{/each}});
 
@@ -429,7 +424,12 @@ namespace Silk.NET.Maths
 
             public static {{@Name thisType}}<T> operator ^(T scalar, {{@Name thisType}}<T> vector) =>
                 new {{@Name thisType}}<T>({{each f in fields}}scalar ^ vector.{{= f}}{{delimit}}, {{/each}});
-        {{else}}
+        {{elif model.Integral == false}}
+            public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
+                new({{each f in fields}}left.{{= f}} % right.{{= f}}{{delimit}}, {{/each}});
+
+            public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> vector, T scalar) =>
+                new({{each f in fields}}vector.{{= f}} % scalar{{delimit}}, {{/each}});
         {{/if}}
     }
 
@@ -437,19 +437,18 @@ namespace Silk.NET.Maths
     {
         /// <summary>Computes the dot product of two vectors.</summary>
         public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
-            where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T> =>
+            where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T> =>
             {{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}} + {{/each}};
 
         /// <summary>Reflects a vector over a normal vector.</summary>
         public static {{@Name thisType}}<T> Reflect<T>({{@Name thisType}}<T> vector, {{@Name thisType}}<T> normal)
-            where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+            where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
         {
             T dot = vector.Dot(normal);
             return vector - (normal * (dot + dot));
         }
 
-        {{if model.Integral}}
-        {{else}}
+        {{if model.Integral != true}}
             /// <summary>Computes the length of the vector.</summary>
             public static T GetLength<T>(this {{@Name thisType}}<T> vector)
                 where T : IFloatingPointIeee754<T> =>
@@ -465,16 +464,20 @@ namespace Silk.NET.Maths
 
         {{/if}}
         {{
-            var baseInterface = model.Integral ? typeof(System.Numerics.IBinaryInteger<>) : typeof(System.Numerics.IFloatingPointIeee754<>);
+            var baseInterface = model.Integral switch {
+                true => typeof(System.Numerics.IBinaryInteger<>),
+                false => typeof(System.Numerics.IFloatingPointIeee754<>),
+                _ => typeof(System.Numerics.INumberBase<>)
+            };
         }}
-        {{each extension in model.Extensions.Where(e => baseInterface == e.Type || baseInterface.GetInterfaces().Select(i => i.IsGenericType && !i.IsGenericTypeDefinition ? i.GetGenericTypeDefinition() : i).Contains(e.Type))}}
+        {{each extension in model.Extensions.Where(e => model.Integral == null || baseInterface == e.Type || baseInterface.GetInterfaces().Select(i => i.IsGenericType && !i.IsGenericTypeDefinition ? i.GetGenericTypeDefinition() : i).Contains(e.Type))}}
             {{
                 var inter = extension.Type;
                 var t = inter.GetGenericArguments().Single();
 
                 object MapType(Type type) =>
                     type == t ? thisType :
-                    type == typeof(int) ? new { Name = "Vector", model.Size, Integral = true } :
+                    type == typeof(int) ? new { Name = "Vector", model.Size, Integral = !model.Integral } :
                     throw new NotImplementedException();
 
                 var name = extension.Name;
@@ -509,7 +512,7 @@ namespace Silk.NET.Maths
                 {{/if}}
             {{/each}}
             public static {{@Name returnVectorType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name a.VectorType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
-                where {{= t}} : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<{{= t}}> =>
+                where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
                 new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
         {{delimit}}
 

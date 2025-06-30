@@ -8,42 +8,69 @@
     {
         static void Main()
         {
-            var dims = new HashSet<Dimension>();
-            for (var r = 1; r < 4; r++)
-            {
-                for (var c = 1; c < 4; c++)
+            var configurations = new[] {
+                new
                 {
-                    dims.Add((r + 1, c + 1));
+                    OutputPaths = new[]
+                    {
+                        @"C:\Users\otac0n\Projects\Silk.NET\sources\Maths\Maths\",
+                    },
+                    Options = new Options(
+                        Namespace: "",
+                        IndependentTypes: true),
+                },
+                new
+                {
+                    OutputPaths = new[]
+                    {
+                        @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\ExtensionSeparate",
+                    },
+                    Options = new Options(
+                        Namespace: "ExtensionSeparate",
+                        IndependentTypes: true),
+                },
+                new
+                {
+                    OutputPaths = new[]
+                    {
+                        @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\ExtensionMerged",
+                    },
+                    Options = new Options(
+                        Namespace: "ExtensionMerged",
+                        IndependentTypes: false),
+                },
+            };
+
+            foreach (var config in configurations)
+            {
+
+                var dims = new HashSet<Dimension>();
+                for (var r = 1; r < 4; r++)
+                {
+                    for (var c = 1; c < 4; c++)
+                    {
+                        dims.Add((r + 1, c + 1));
+                    }
                 }
-            }
 
-            dims.Add((5, 4));
+                dims.Add((5, 4));
 
-            var multiplicationOperators =
-                (from left in dims
-                 from right in dims
-                 where left.Columns == right.Rows
-                 let o = (left.Rows, right.Columns)
-                 where dims.Contains(o)
-                 select (left, right))
-                 .ToLookup(m => new[] { m.left, m.right }.Max());
+                var multiplicationOperators =
+                    (from left in dims
+                     from right in dims
+                     where left.Columns == right.Rows
+                     let o = (left.Rows, right.Columns)
+                     where dims.Contains(o)
+                     select (left, right))
+                     .ToLookup(m => new[] { m.left, m.right }.Max());
 
-            var matrixModels =
-                (from d in dims
-                 from integral in new[] { true, false }
-                 select new Matrix(d, integral, dims, multiplicationOperators[d])).ToList();
+                var matrixModels =
+                    (from d in dims
+                     from integral in config.Options.IndependentTypes ? new bool?[] { true, false } : [null]
+                     select new Matrix(config.Options, d, integral, dims, multiplicationOperators[d])).ToList();
 
-            foreach (var model in matrixModels)
-            {
-                var name = Templates.Name(new { Name = "Matrix", model.Size, model.Integral });
-                var path = Path.Combine(outputPath, $"{name}.gen.cs");
-                using var writer = new StreamWriter(path);
-                Templates.RenderMatrix(model, writer);
-                Console.WriteLine($"Wrote {name}");
-            }
-
-            var extensions = new Extension[]
-            {
+                var extensions = new Extension[]
+                {
                 // INumber<>
                 new(typeof(INumber<>), nameof(INumber<>.Sign), [Memberwise]),
                 new(typeof(INumber<>), nameof(INumber<>.Max), [Memberwise, Memberwise]),
@@ -149,21 +176,36 @@
                 new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Cosh), [Memberwise]),
                 new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Sinh), [Memberwise]),
                 new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Tanh), [Memberwise]),
-            };
+                };
 
-            var sizes = Enumerable.Range(2, 3);
-            var vectorModels =
-                (from d in sizes
-                 from integral in new[] { true, false }
-                 select new Model.Vector(d, integral, sizes, extensions)).ToList();
+                var sizes = Enumerable.Range(2, 3);
+                var vectorModels =
+                    (from d in sizes
+                     from integral in config.Options.IndependentTypes ? new bool?[] { true, false } : [null]
+                     select new Model.Vector(config.Options, d, integral, sizes, extensions)).ToList();
 
-            foreach (var model in vectorModels)
-            {
-                var name = Templates.Name(new { Name = "Vector", model.Size, model.Integral });
-                var path = Path.Combine(outputPath, $"{name}.gen.cs");
-                using var writer = new StreamWriter(path);
-                Templates.RenderVector(model, writer);
-                Console.WriteLine($"Wrote {name}");
+                foreach (var outputPath in config.OutputPaths)
+                {
+                    Directory.CreateDirectory(outputPath);
+
+                    foreach (var model in matrixModels)
+                    {
+                        var name = Templates.Name(new { Name = "Matrix", model.Size, model.Integral });
+                        var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderMatrix(model, writer);
+                        Console.WriteLine($"Wrote {name}");
+                    }
+
+                    foreach (var model in vectorModels)
+                    {
+                        var name = Templates.Name(new { Name = "Vector", model.Size, model.Integral });
+                        var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderVector(model, writer);
+                        Console.WriteLine($"Wrote {name}");
+                    }
+                }
             }
         }
     }

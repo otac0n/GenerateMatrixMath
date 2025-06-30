@@ -2,6 +2,7 @@
 @using GenerateMatrixMath.Model
 @model Matrix
 {{
+    var options = model.Options;
     var size = model.Size;
     var rows = Enumerable.Range(1, size.Rows);
     var cols = Enumerable.Range(1, size.Columns);
@@ -10,14 +11,14 @@
     var rowType = new { Name = "Vector", Size = size.Columns, model.Integral };
     var columnType = new { Name = "Vector", Size = size.Rows, model.Integral };
 }}
-namespace Silk.NET.Maths
+namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{/if}}
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
 
     partial struct {{@Name thisType}}<T> :
         IEquatable<{{@Name thisType}}<T>>
-        where T : {{if model.Integral}}IBinaryInteger{{else}}IFloatingPointIeee754{{/if}}<T>
+        where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
     {
         {{if size.Rows == size.Columns}}
             /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
@@ -142,7 +143,7 @@ namespace Silk.NET.Maths
         {{/each}}
     }
 
-    {{if !model.Integral}}
+    {{if model.Integral != true}}
         static partial class {{@Name thisType}}
         {
             public static {{@Name thisType}}<T> Lerp<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
