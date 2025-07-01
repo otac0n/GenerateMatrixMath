@@ -4,13 +4,11 @@
 @using GenerateMatrixMath.Model
 @model Vector
 {{
-    var options = model.Options;
     var size = model.Size;
     var fields = Vector.VectorFieldNames.Take(size);
-    var thisType = new { Name = "Vector", model.Size, model.Integral };
-    var oppositeType = new { Name = "Vector", model.Size, Integral = !model.Integral };
+    var thisType = new { Name = "Vector", model.Size };
 }}
-namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{/if}}
+namespace Silk.NET.Maths
 {
     using System.Collections;
     using System.Diagnostics.CodeAnalysis;
@@ -27,7 +25,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
         ISpanParsable<{{@Name thisType}}<T>>,
         IUtf8SpanFormattable,
         IUtf8SpanParsable<{{@Name thisType}}<T>>
-        where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
+        where T : INumberBase<T>
     {
         {{each f in fields}}
             /// <summary>The {{= f}} component of the vector.</summary>
@@ -42,7 +40,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
 
         {{each s in model.Sizes.Where(s => s < size)}}
             {{
-                var otherType = new { Name = "Vector", Size = s, model.Integral };
+                var otherType = new { Name = "Vector", Size = s };
             }}
             /// <summary> Initializes the vector using a <see cref="{{@Name otherType}}{T}"/> for the initial elements, and the specified {{if size - s == 1}}component{{else}}components{{/if}} for the remainder. </summary>
             public {{@Name thisType}}({{@Name otherType}}<T> other, {{each f in fields.Skip(s)}}T {{= f.ToLower()}}{{delimit}}, {{/each}}) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each i in Enumerable.Range(0, size)}}{{ var f = Vector.VectorFieldNames[i]; }}{{if i < s}}other.{{= f}}{{else}}{{= f.ToLower()}}{{/if}}{{delimit}}, {{/each}});
@@ -70,11 +68,6 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
             public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
 
         {{/each}}
-        {{if model.Integral == true}}
-            /// <summary>Gets a vector with all bits set for each component.</summary>
-            public static {{@Name thisType}}<T> AllBitsSet => new {{@Name thisType}}<T>({{each f in fields}}T.AllBitsSet{{delimit}}, {{/each}});
-
-        {{/if}}
         /// <summary>Gets the squared length of the vector (dot product with itself).</summary>
         public T LengthSquared => {{@Name thisType}}.Dot(this, this);
 
@@ -398,92 +391,40 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
 
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
-
-        {{if model.Integral == true}}
-            public static {{@Name thisType}}<T> operator ~({{@Name thisType}}<T> vector) =>
-                new {{@Name thisType}}<T>({{each f in fields}}~vector.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator &({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-                new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} & right.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator |({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-                new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} | right.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator ^({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-                new {{@Name thisType}}<T>({{each f in fields}}left.{{= f}} ^ right.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator &({{@Name thisType}}<T> vector, T scalar) =>
-                new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} & scalar{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator &(T scalar, {{@Name thisType}}<T> vector) =>
-                new {{@Name thisType}}<T>({{each f in fields}}scalar & vector.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator |({{@Name thisType}}<T> vector, T scalar) =>
-                new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} | scalar{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator |(T scalar, {{@Name thisType}}<T> vector) =>
-                new {{@Name thisType}}<T>({{each f in fields}}scalar | vector.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator ^({{@Name thisType}}<T> vector, T scalar) =>
-                new {{@Name thisType}}<T>({{each f in fields}}vector.{{= f}} ^ scalar{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator ^(T scalar, {{@Name thisType}}<T> vector) =>
-                new {{@Name thisType}}<T>({{each f in fields}}scalar ^ vector.{{= f}}{{delimit}}, {{/each}});
-        {{elif model.Integral == false}}
-            public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
-                new({{each f in fields}}left.{{= f}} % right.{{= f}}{{delimit}}, {{/each}});
-
-            public static {{@Name thisType}}<T> operator %({{@Name thisType}}<T> vector, T scalar) =>
-                new({{each f in fields}}vector.{{= f}} % scalar{{delimit}}, {{/each}});
-        {{/if}}
     }
 
     public static partial class {{@Name thisType}}
     {
         /// <summary>Computes the dot product of two vectors.</summary>
         public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
-            where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T> =>
+            where T : INumberBase<T> =>
             {{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}} + {{/each}};
 
         /// <summary>Reflects a vector over a normal vector.</summary>
         public static {{@Name thisType}}<T> Reflect<T>({{@Name thisType}}<T> vector, {{@Name thisType}}<T> normal)
-            where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
+            where T : INumberBase<T>
         {
             T dot = vector.Dot(normal);
             return vector - (normal * (dot + dot));
         }
 
-        {{if model.Integral != true}}
-            /// <summary>Computes the length of the vector.</summary>
-            public static T GetLength<T>(this {{@Name thisType}}<T> vector)
-                where T : IFloatingPointIeee754<T> =>
-                T.Sqrt(vector.LengthSquared);
+        /// <summary>Computes the length of the vector.</summary>
+        public static T GetLength<T>(this {{@Name thisType}}<T> vector)
+            where T : IFloatingPointIeee754<T> =>
+            T.Sqrt(vector.LengthSquared);
 
-            /// <summary>Normalizes a vector.</summary>
-            public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
-                where T : IFloatingPointIeee754<T>
-            {
-                T length = vector.GetLength();
-                return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
-            }
+        /// <summary>Normalizes a vector.</summary>
+        public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
+            where T : IFloatingPointIeee754<T>
+        {
+            T length = vector.GetLength();
+            return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
+        }
 
-        {{/if}}
-        {{
-            var baseInterface = model.Integral switch {
-                true => typeof(System.Numerics.IBinaryInteger<>),
-                false => typeof(System.Numerics.IFloatingPointIeee754<>),
-                _ => typeof(System.Numerics.INumberBase<>)
-            };
-        }}
-        {{each extension in model.Extensions.Where(e => model.Integral == null || baseInterface == e.Type || baseInterface.GetInterfaces().Select(i => i.IsGenericType && !i.IsGenericTypeDefinition ? i.GetGenericTypeDefinition() : i).Contains(e.Type))}}
+        {{each extension in model.Extensions}}
             {{
                 var inter = extension.Type;
                 var t = inter.GetGenericArguments().Single();
-
-                object MapType(Type type) =>
-                    type == t ? thisType :
-                    type == typeof(int) ? new { Name = "Vector", model.Size, Integral = !model.Integral } :
-                    throw new NotImplementedException();
 
                 var name = extension.Name;
                 var interName = inter.Name;
@@ -501,12 +442,10 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
                     {
                         Memberwise = memberwise,
                         Type = p.ParameterType,
-                        VectorType = !memberwise ? null : MapType(p.ParameterType),
                         p.Name,
                     };
                 });
                 var returnType = method.ReturnType;
-                var returnVectorType = MapType(returnType);
             }}
             /// <summary>Applies <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= Encode(a.Type).Replace('<', '{').Replace('>', '}')}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
             {{each a in arguments}}
@@ -516,7 +455,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
                     /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
                 {{/if}}
             {{/each}}
-            public static {{@Name returnVectorType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name a.VectorType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
+            public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
                 where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
                 new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
         {{delimit}}

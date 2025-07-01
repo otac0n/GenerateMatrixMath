@@ -2,16 +2,15 @@
 @using GenerateMatrixMath.Model
 @model Matrix
 {{
-    var options = model.Options;
     var size = model.Size;
     var rows = Enumerable.Range(1, size.Rows);
     var cols = Enumerable.Range(1, size.Columns);
 
-    var thisType = new { Name = "Matrix", model.Size, model.Integral };
-    var rowType = new { Name = "Vector", Size = size.Columns, model.Integral };
-    var columnType = new { Name = "Vector", Size = size.Rows, model.Integral };
+    var thisType = new { Name = "Matrix", model.Size };
+    var rowType = new { Name = "Vector", Size = size.Columns };
+    var columnType = new { Name = "Vector", Size = size.Rows };
 }}
-namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{/if}}
+namespace Silk.NET.Maths
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
@@ -20,7 +19,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
 
     public partial struct {{@Name thisType}}<T> :
         IEquatable<{{@Name thisType}}<T>>
-        where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
+        where T : INumberBase<T>
     {
         {{if size.Rows == size.Columns}}
             /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
@@ -113,7 +112,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
         }}
         {{if model.AllSizes.Contains(transposeSize)}}
             {{
-                var transposeType = new { Name = "Matrix", Size = transposeSize, model.Integral };
+                var transposeType = new { Name = "Matrix", Size = transposeSize };
             }}
             /// <summary>Computes the transpose of the matrix.</summary>
             public {{@Name transposeType}}<T> Transpose() =>
@@ -162,9 +161,9 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
             {{
                 var middleSize = mul.Left.Columns;
                 var outputSize = new Dimension(mul.Left.Rows, mul.Right.Columns);
-                var outputType = new { Name = "Matrix", Size = outputSize, model.Integral };
-                var leftType = new { Name = "Matrix", Size = mul.Left, model.Integral };
-                var rightType = new { Name = "Matrix", Size = mul.Right, model.Integral };
+                var outputType = new { Name = "Matrix", Size = outputSize };
+                var leftType = new { Name = "Matrix", Size = mul.Left };
+                var rightType = new { Name = "Matrix", Size = mul.Right };
             }}
             /// <summary>Multiplies a matrix by another matrix.</summary>
             /// <param name="left">The first source matrix.</param>
@@ -178,18 +177,16 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
         {{/each}}
     }
 
-    {{if model.Integral != true}}
-        public static partial class {{@Name thisType}}
-        {
-            /// <summary>Linearly interpolates between the corresponding values of two matrices.</summary>
-            /// <param name="value1">The first source matrix.</param>
-            /// <param name="value2">The second source matrix.</param>
-            /// <param name="amount">The relative weight of the second source matrix.</param>
-            /// <returns>The interpolated matrix.</returns>
-            public static {{@Name thisType}}<T> Lerp<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
-                where T : IFloatingPointIeee754<T> =>
-                new({{each r in rows}}{{@Name rowType}}.Lerp(value1.Row{{= r}}, value2.Row{{= r}}, amount){{delimit}},
-                    {{/each}});
-        }
-    {{/if}}
+    public static partial class {{@Name thisType}}
+    {
+        /// <summary>Linearly interpolates between the corresponding values of two matrices.</summary>
+        /// <param name="value1">The first source matrix.</param>
+        /// <param name="value2">The second source matrix.</param>
+        /// <param name="amount">The relative weight of the second source matrix.</param>
+        /// <returns>The interpolated matrix.</returns>
+        public static {{@Name thisType}}<T> Lerp<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
+            where T : IFloatingPointIeee754<T> =>
+            new({{each r in rows}}{{@Name rowType}}.Lerp(value1.Row{{= r}}, value2.Row{{= r}}, amount){{delimit}},
+                {{/each}});
+    }
 }
