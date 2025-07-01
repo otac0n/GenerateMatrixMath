@@ -17,26 +17,16 @@
                     },
                     Options = new Options(
                         Namespace: "",
-                        IndependentTypes: true),
+                        IndependentTypes: false),
                 },
                 new
                 {
                     OutputPaths = new[]
                     {
-                        @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\ExtensionSeparate",
+                        @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\",
                     },
                     Options = new Options(
-                        Namespace: "ExtensionSeparate",
-                        IndependentTypes: true),
-                },
-                new
-                {
-                    OutputPaths = new[]
-                    {
-                        @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\ExtensionMerged",
-                    },
-                    Options = new Options(
-                        Namespace: "ExtensionMerged",
+                        Namespace: "",
                         IndependentTypes: false),
                 },
             };
@@ -96,7 +86,7 @@
                 //new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, One, One]), // DOTNET>=9
 
                 // IBinaryNumber<>
-                new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
+                //new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
 
                 // IBinaryInteger<>
                 new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.PopCount), [Memberwise]),

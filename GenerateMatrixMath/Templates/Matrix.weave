@@ -15,27 +15,55 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.Serialization;
 
-    partial struct {{@Name thisType}}<T> :
+    public partial struct {{@Name thisType}}<T> :
         IEquatable<{{@Name thisType}}<T>>
         where T : {{if model.Integral == true}}IBinaryInteger{{elif model.Integral == false}}IFloatingPointIeee754{{else}}INumberBase{{/if}}<T>
     {
         {{if size.Rows == size.Columns}}
             /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
-            public static readonly {{@Name thisType}}<T> Identity = new({{each r in rows}}
+            public static {{@Name thisType}}<T> Identity { get; } = new({{each r in rows}}
                 new({{each c in cols}}{{if r == c}}T.MultiplicativeIdentity{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
 
         {{/if}}
         {{each r in rows}}
             /// <summary>The {{@Ordinal r}} row of the matrix represented as a vector.</summary>
+            [IgnoreDataMember]
             public {{@Name rowType}}<T> Row{{= r}};
 
         {{/each}}
+        {{if size.Rows < 5}}
+            {{each c in cols}}
+                /// <summary>The {{@Ordinal c}} column of the matrix represented as a vector.</summary>
+                [IgnoreDataMember]
+                public {{@Name columnType}}<T> Column{{= c}} => new({{each r in rows}}Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}}{{delimit}}, {{/each}});
+
+            {{/each}}
+        {{/if}}
         /// <summary>
         /// Constructs a <see cref="{{@Name thisType}}{T}"/> from the given rows.
         /// </summary>
-        public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) => ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
+        public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) =>
+            ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
 
+        /// <summary>
+        /// Constructs a <see cref="{{@Name thisType}}{T}"/> from the given components.
+        /// </summary>
+        public {{@Name thisType}}(
+            {{each r in rows}}{{each c in cols}}T m{{= r}}{{= c}}{{delimit}}, {{/each}}{{delimit}},
+            {{/each}})
+        {
+            {{each r in rows}}
+                Row{{= r}} = new({{each c in cols}}m{{= r}}{{= c}}{{delimit}}, {{/each}});
+            {{/each}}
+        }
+
+        /// <summary>
+        /// Indexer for the rows of this matrix.
+        /// </summary>
+        /// <param name="row">The row to select. Zero based.</param>
         [UnscopedRef]
         public ref {{@Name rowType}}<T> this[int row]
         {
@@ -49,22 +77,29 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
                     {{/each}}
                 }
 
-                throw new ArgumentOutOfRangeException(nameof(row));
+                throw new IndexOutOfRangeException();
             }
         }
 
+        /// <summary>
+        /// Indexer for the values in this matrix.
+        /// </summary>
+        /// <param name="row">The row to select. Zero based.</param>
+        /// <param name="column">The column to select. Zero based.</param>
         [UnscopedRef]
         public ref T this[int row, int column] => ref this[row][column];
 
         {{each r in rows}}
             {{each c in cols}}
                 /// <summary>Gets the element in the {{@Ordinal r}} row and {{@Ordinal c}} column of the matrix.</summary>
+                [DataMember]
                 [UnscopedRef]
                 public ref T M{{= r}}{{= c}} => ref Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
 
             {{/each}}
         {{/each}}
         /// <inheridoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
 
         /// <inheridoc/>
@@ -144,11 +179,16 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
     }
 
     {{if model.Integral != true}}
-        static partial class {{@Name thisType}}
+        public static partial class {{@Name thisType}}
         {
+            /// <summary>Linearly interpolates between the corresponding values of two matrices.</summary>
+            /// <param name="value1">The first source matrix.</param>
+            /// <param name="value2">The second source matrix.</param>
+            /// <param name="amount">The relative weight of the second source matrix.</param>
+            /// <returns>The interpolated matrix.</returns>
             public static {{@Name thisType}}<T> Lerp<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
                 where T : IFloatingPointIeee754<T> =>
-                new({{each r in rows}}new({{each c in cols}}T.Lerp(value1.M{{= r}}{{= c}}, value2.M{{= r}}{{= c}}, amount){{delimit}}, {{/each}}){{delimit}},
+                new({{each r in rows}}{{@Name rowType}}.Lerp(value1.Row{{= r}}, value2.Row{{= r}}, amount){{delimit}},
                     {{/each}});
         }
     {{/if}}

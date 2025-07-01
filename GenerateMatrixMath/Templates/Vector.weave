@@ -18,7 +18,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
     using System.Runtime.InteropServices;
     using System.Text;
 
-    partial struct {{@Name thisType}}<T> :
+    public partial struct {{@Name thisType}}<T> :
         IEquatable<{{@Name thisType}}<T>>,
         IReadOnlyList<T>,
         IFormattable,
@@ -353,6 +353,11 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
             {{/each}}
         }
 
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public {{@Name thisType}}<TOther> As<TOther>()
+            where TOther : INumberBase<TOther> =>
+            new({{each f in fields}}TOther.CreateSaturating({{= f}}){{delimit}}, {{/each}});
+
         /// <summary>Implicitly casts a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
         public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) v) =>
             new({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
@@ -433,7 +438,7 @@ namespace Silk.NET.Maths{{if options.Namespace != ""}}.{{= options.Namespace}}{{
         {{/if}}
     }
 
-    static partial class {{@Name thisType}}
+    public static partial class {{@Name thisType}}
     {
         /// <summary>Computes the dot product of two vectors.</summary>
         public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)

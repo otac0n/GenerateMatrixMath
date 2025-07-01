@@ -1,2 +1,2 @@
 @namespace GenerateMatrixMath
-{{= model.Name}}{{= model.Size}}{{if model.Integral == true}}I{{elif model.Integral == false}}F{{else}}D{{/if}}
+{{= model.Name}}{{= model.Size.ToString().ToUpper()}}{{if model.Integral == true}}I{{elif model.Integral == false}}F{{elif model.Size is int}}D{{else}}{{/if}}
