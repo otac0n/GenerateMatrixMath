@@ -333,21 +333,26 @@ namespace Silk.NET.Maths
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each f in fields}}{{= f}}{{delimit}}, {{/each}});
 
-        /// <summary>Desconstructs a vector into its components.</summary>
-        {{each f in fields}}
-            /// <param name="{{= f.ToLower()}}">The {{= f}} component.</param>
-        {{/each}}
-        public void Deconstruct({{each f in fields}}out T {{= f.ToLower()}}{{delimit}}, {{/each}})
-        {
-            {{each f in fields}}
-                {{= f.ToLower()}} = {{= f}};
-            {{/each}}
-        }
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateChecked<TOther>({{@Name thisType}}<TOther> source)
+            where TOther : INumberBase<TOther> =>
+            new({{each f in fields}}T.CreateChecked(source.{{= f}}){{delimit}}, {{/each}});
 
         /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateSaturating<TOther>({{@Name thisType}}<TOther> source)
+            where TOther : INumberBase<TOther> =>
+            new({{each f in fields}}T.CreateSaturating(source.{{= f}}){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateTruncating<TOther>({{@Name thisType}}<TOther> source)
+            where TOther : INumberBase<TOther> =>
+            new({{each f in fields}}T.CreateTruncating(source.{{= f}}){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        [Obsolete("Use CreateChecked, CreateSaturating, CreateTruncating, or a cast instead.", error: false)]
         public {{@Name thisType}}<TOther> As<TOther>()
             where TOther : INumberBase<TOther> =>
-            new({{each f in fields}}TOther.CreateSaturating({{= f}}){{delimit}}, {{/each}});
+            {{@Name thisType}}<TOther>.CreateTruncating(this);
 
         /// <summary>Implicitly casts a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
         public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) v) =>
@@ -400,7 +405,15 @@ namespace Silk.NET.Maths
             /// <param name="from">The source vector.</param>
             /// <returns>The <see cref="{{= typeName}}"/> vector.</returns>
             public static explicit operator {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
-                from.As<{{= typeName}}>();
+                {{@Name thisType}}<{{= typeName}}>.CreateTruncating(from);
+
+            /// <summary>
+            /// Converts a vector of <typeparamref name="T"/> into one with an underlying type of <see cref="{{= typeName}}"/>.
+            /// </summary>
+            /// <param name="from">The source vector.</param>
+            /// <returns>The <see cref="{{= typeName}}"/> vector.</returns>
+            public static explicit operator checked {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
+                {{@Name thisType}}<{{= typeName}}>.CreateChecked(from);
         {{delimit}}
 
         {{/each}}
@@ -418,8 +431,20 @@ namespace Silk.NET.Maths
         extension<T>({{@Name thisType}}<T> vector)
             where T : INumberBase<T>
         {
-            /// <summary>Gets the length of the vector.</summary>
+            /// <summary>Gets the length squared of the vector.</summary>
             public T LengthSquared => {{@Name thisType}}.Dot(vector, vector);
+        }
+
+        /// <summary>Desconstructs a vector into its components.</summary>
+        {{each f in fields}}
+            /// <param name="{{= f.ToLower()}}">The {{= f}} component.</param>
+        {{/each}}
+        public static void Deconstruct<T>(this {{@Name thisType}}<T> vector, {{each f in fields}}out T {{= f.ToLower()}}{{delimit}}, {{/each}})
+            where T : INumberBase<T>
+        {
+            {{each f in fields}}
+                {{= f.ToLower()}} = vector.{{= f}};
+            {{/each}}
         }
 
         /// <summary>Computes the dot product of two vectors.</summary>
@@ -437,10 +462,57 @@ namespace Silk.NET.Maths
 
         /// <summary>Normalizes a vector.</summary>
         public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
-            where T : INumberBase<T>, IRootFunctions<T>
+            where T : IRootFunctions<T>
         {
             T length = vector.Length;
             return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
+        }
+
+        /// <summary>Returns the Euclidean distance between the two given points.</summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The distance.</returns>
+        public static T Distance<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+            where T : IRootFunctions<T> =>
+            T.Sqrt(DistanceSquared(value1, value2));
+
+        /// <summary>Returns the Euclidean distance squared between the two given points.</summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The distance squared.</returns>
+        public static T DistanceSquared<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+            where T : INumberBase<T>
+        {
+            var difference = value1 - value2;
+            return Dot(difference, difference);
+        }
+
+        /// <summary>Linearly interpolates between two vectors using a scalar t-value (clamped between 0 and 1).</summary>
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, T amount)
+            where T : IFloatingPointIeee754<T> =>
+            Lerp(a, b, T.Clamp(amount, T.Zero, T.One));
+
+        /// <summary>Linearly interpolates between two vectors using a vector t-value (clamped between 0 and 1).</summary>
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, {{@Name thisType}}<T> amount)
+            where T : IFloatingPointIeee754<T> =>
+            new({{each f in fields}}T.Lerp(a.{{= f}}, b.{{= f}}, T.Clamp(amount.{{= f}}, T.Zero, T.One)){{delimit}},
+                {{/each}});
+
+        public static ({{@Name thisType}}<T> Sin, {{@Name thisType}}<T> Cos) SinCos<T>(this {{@Name thisType}}<T> x)
+            where T : ITrigonometricFunctions<T> =>
+            (new({{each f in fields}}T.Sin(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.Cos(x.{{= f}}){{delimit}}, {{/each}}));
+
+        public static ({{@Name thisType}}<T> SinPi, {{@Name thisType}}<T> CosPi) SinCosPi<T>(this {{@Name thisType}}<T> x)
+            where T : ITrigonometricFunctions<T> =>
+            (new({{each f in fields}}T.SinPi(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.CosPi(x.{{= f}}){{delimit}}, {{/each}}));
+
+        public static ({{@Name thisType}}<T> Quotient, {{@Name thisType}}<T> Remainder) DivRem<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : IBinaryInteger<T>
+        {
+            {{each f in fields}}
+                var (q{{= f}}, r{{= f}}) = T.DivRem(left.{{= f}}, right.{{= f}});
+            {{/each}}
+            return (new {{@Name thisType}}<T>({{each f in fields}}q{{= f}}{{delimit}}, {{/each}}), new {{@Name thisType}}<T>({{each f in fields}}r{{= f}}{{delimit}}, {{/each}}));
         }
 
         {{each extension in model.Extensions}}

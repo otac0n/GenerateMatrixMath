@@ -125,6 +125,27 @@ namespace Silk.NET.Maths
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}});
 
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateChecked<TOther>({{@Name thisType}}<TOther> other)
+            where TOther : INumberBase<TOther> =>
+            new({{each r in rows}}{{@Name rowType}}<T>.CreateChecked(other.Row{{= r}}){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateSaturating<TOther>({{@Name thisType}}<TOther> other)
+            where TOther : INumberBase<TOther> =>
+            new({{each r in rows}}{{@Name rowType}}<T>.CreateSaturating(other.Row{{= r}}){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public static {{@Name thisType}}<T> CreateTruncating<TOther>({{@Name thisType}}<TOther> other)
+            where TOther : INumberBase<TOther> =>
+            new({{each r in rows}}{{@Name rowType}}<T>.CreateTruncating(other.Row{{= r}}){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        [Obsolete("Use CreateChecked, CreateSaturating, CreateTruncating or cast instead.", error: false)]
+        public {{@Name thisType}}<TOther> As<TOther>()
+            where TOther : INumberBase<TOther> =>
+            new({{each r in rows}}Row{{= r}}.As<TOther>(){{delimit}}, {{/each}});
+
         {{
             var transposeSize = new Dimension(Rows: size.Columns, Columns: size.Rows);
         }}
@@ -209,6 +230,7 @@ namespace Silk.NET.Maths
         {{delimit}}
 
         {{/each}}
+
         {{each type in model.Casts}}
             {{
                 var typeName = Encode(type);
@@ -219,7 +241,16 @@ namespace Silk.NET.Maths
             /// <param name="from">The source matrix.</param>
             /// <returns>The <see cref="{{= typeName}}"/> matrix.</returns>
             public static explicit operator {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
-                new({{each r in rows}}from.Row{{= r}}.As<{{= typeName}}>(){{delimit}},
+                new({{each r in rows}}{{@Name rowType}}<{{= typeName}}>.CreateTruncating(from.Row{{= r}}){{delimit}},
+                    {{/each}});
+
+            /// <summary>
+            /// Converts a matrix of <typeparamref name="T"/> into one with an underlying type of <see cref="{{= typeName}}"/>.
+            /// </summary>
+            /// <param name="from">The source matrix.</param>
+            /// <returns>The <see cref="{{= typeName}}"/> matrix.</returns>
+            public static explicit operator checked {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
+                new({{each r in rows}}{{@Name rowType}}<{{= typeName}}>.CreateChecked(from.Row{{= r}}){{delimit}},
                     {{/each}});
         {{delimit}}
 
