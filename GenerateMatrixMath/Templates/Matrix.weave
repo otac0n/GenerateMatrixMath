@@ -5,6 +5,12 @@
     var size = model.Size;
     var rows = Enumerable.Range(1, size.Rows);
     var cols = Enumerable.Range(1, size.Columns);
+    var cells = (from r in rows
+                 from c in cols
+                 select new { Row = r, Column = c }).Select((v, i) => new { v.Row, v.Column, Index = i });
+    var rowsWithCells =
+        from c in cells
+        group c by c.Row;
 
     var thisType = new { Name = "Matrix", model.Size };
     var rowType = new { Name = "Vector", Size = size.Columns };
@@ -97,6 +103,18 @@ namespace Silk.NET.Maths
 
             {{/each}}
         {{/each}}
+
+        {{
+            var open = "{{";
+            var close = "}" + "}";
+        }}
+        /// <inheritdoc/>
+        public override string ToString() =>
+            string.Format(
+                "{{= open }} {{each row in rowsWithCells}}{{= open }}{{each r in row}}M{{= r.Row }}{{= r.Column }}:{{= "{" + r.Index + "}" }}{{delimit}} {{/each}}{{= close }}{{delimit}} {{/each}} {{= close }}",
+                {{each r in rows}}{{each c in cols}}Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}}{{delimit}}, {{/each}}{{delimit}},
+                {{/each}});
+
         /// <inheridoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
@@ -157,6 +175,22 @@ namespace Silk.NET.Maths
             new({{each r in rows}}-value.Row{{= r}}{{delimit}},
                 {{/each}});
 
+        /// <summary>Multiplies a matrix by a scalar value.</summary>
+        /// <param name="left">The scaling factor.</param>
+        /// <param name="right">The source matrix.</param>
+        /// <returns>The scaled matrix.</returns>
+        public static {{@Name thisType}}<T> operator *(T left, {{@Name thisType}}<T> right) =>
+            new({{each r in rows}}left * right.Row{{= r}}{{delimit}},
+                {{/each}});
+
+        /// <summary>Multiplies a matrix by a scalar value.</summary>
+        /// <param name="left">The source matrix.</param>
+        /// <param name="right">The scaling factor.</param>
+        /// <returns>The scaled matrix.</returns>
+        public static {{@Name thisType}}<T> operator *({{@Name thisType}}<T> left, T right) =>
+            new({{each r in rows}}left.Row{{= r}} * right{{delimit}},
+                {{/each}});
+
         {{each mul in model.MultiplyOperators}}
             {{
                 var middleSize = mul.Left.Columns;
@@ -171,6 +205,21 @@ namespace Silk.NET.Maths
             /// <returns>The result of the multiplication.</returns>
             public static {{@Name outputType}}<T> operator *({{@Name leftType}}<T> left, {{@Name rightType}}<T> right) =>
                 new({{each r in Enumerable.Range(1, outputSize.Rows)}}{{each m in Enumerable.Range(1, middleSize)}}left.M{{= r}}{{= m}} * right.Row{{= m}}{{delimit}} + {{/each}}{{delimit}},
+                    {{/each}});
+        {{delimit}}
+
+        {{/each}}
+        {{each type in model.Casts}}
+            {{
+                var typeName = Encode(type);
+            }}
+            /// <summary>
+            /// Converts a matrix of <typeparamref name="T"/> into one with an underlying type of <see cref="{{= typeName}}"/>.
+            /// </summary>
+            /// <param name="from">The source matrix.</param>
+            /// <returns>The <see cref="{{= typeName}}"/> matrix.</returns>
+            public static explicit operator {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
+                new({{each r in rows}}from.Row{{= r}}.As<{{= typeName}}>(){{delimit}},
                     {{/each}});
         {{delimit}}
 

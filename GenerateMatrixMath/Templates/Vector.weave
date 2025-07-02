@@ -68,8 +68,6 @@ namespace Silk.NET.Maths
             public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
 
         {{/each}}
-        /// <summary>Gets the squared length of the vector (dot product with itself).</summary>
-        public T LengthSquared => {{@Name thisType}}.Dot(this, this);
 
         /// <inheritdoc/>
         T IReadOnlyList<T>.this[int index] => this[index];
@@ -391,10 +389,39 @@ namespace Silk.NET.Maths
 
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
+
+        {{each type in model.Casts}}
+            {{
+                var typeName = type.ToCSharpString();
+            }}
+            /// <summary>
+            /// Converts a vector of <typeparamref name="T"/> into one with an underlying type of <see cref="{{= typeName}}"/>.
+            /// </summary>
+            /// <param name="from">The source vector.</param>
+            /// <returns>The <see cref="{{= typeName}}"/> vector.</returns>
+            public static explicit operator {{@Name thisType}}<{{= typeName}}>({{@Name thisType}}<T> from) =>
+                from.As<{{= typeName}}>();
+        {{delimit}}
+
+        {{/each}}
     }
 
     public static partial class {{@Name thisType}}
     {
+        extension<T>({{@Name thisType}}<T> vector)
+            where T : IRootFunctions<T>
+        {
+            /// <summary>Gets the length of the vector.</summary>
+            public T Length => T.Sqrt(vector.LengthSquared);
+        }
+
+        extension<T>({{@Name thisType}}<T> vector)
+            where T : INumberBase<T>
+        {
+            /// <summary>Gets the length of the vector.</summary>
+            public T LengthSquared => {{@Name thisType}}.Dot(vector, vector);
+        }
+
         /// <summary>Computes the dot product of two vectors.</summary>
         public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
             where T : INumberBase<T> =>
@@ -408,16 +435,11 @@ namespace Silk.NET.Maths
             return vector - (normal * (dot + dot));
         }
 
-        /// <summary>Computes the length of the vector.</summary>
-        public static T GetLength<T>(this {{@Name thisType}}<T> vector)
-            where T : IFloatingPointIeee754<T> =>
-            T.Sqrt(vector.LengthSquared);
-
         /// <summary>Normalizes a vector.</summary>
         public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
-            where T : IFloatingPointIeee754<T>
+            where T : INumberBase<T>, IRootFunctions<T>
         {
-            T length = vector.GetLength();
+            T length = vector.Length;
             return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
         }
 
