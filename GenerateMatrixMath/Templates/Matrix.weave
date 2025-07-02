@@ -32,6 +32,10 @@ namespace Silk.NET.Maths
             public static {{@Name thisType}}<T> Identity { get; } = new({{each r in rows}}
                 new({{each c in cols}}{{if r == c}}T.MultiplicativeIdentity{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
 
+            /// <summary>Returns whether the matrix is the identity matrix.</summary>
+            [IgnoreDataMember]
+            public readonly bool IsIdentity => this == Identity;
+
         {{/if}}
         {{each r in rows}}
             /// <summary>The {{@Ordinal r}} row of the matrix represented as a vector.</summary>
