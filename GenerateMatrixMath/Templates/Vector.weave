@@ -515,6 +515,22 @@ namespace Silk.NET.Maths
             return (new {{@Name thisType}}<T>({{each f in fields}}q{{= f}}{{delimit}}, {{/each}}), new {{@Name thisType}}<T>({{each f in fields}}r{{= f}}{{delimit}}, {{/each}}));
         }
 
+        /// <summary>Multiplies a vector by a scalar value.</summary>
+        /// <param name="left">The source vector.</param>
+        /// <param name="right">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>({{@Name thisType}}<T> left, T right)
+            where T : INumberBase<T> =>
+            left * right;
+
+        /// <summary>Multiplies a vector by a scalar value.</summary>
+        /// <param name="left">The scaling factor.</param>
+        /// <param name="right">The source vector.</param>
+        /// <returns>The scaled vector.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>(T left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T> =>
+            left * right;
+
         {{each extension in model.Extensions}}
             {{
                 var inter = extension.Type;

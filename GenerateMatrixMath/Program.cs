@@ -40,18 +40,22 @@
 
             dims.Add((5, 4));
 
-            var multiplicationOperators =
-                (from left in dims
-                    from right in dims
-                    where left.Columns == right.Rows
-                    let o = (left.Rows, right.Columns)
-                    where dims.Contains(o)
-                    select (left, right))
-                    .ToLookup(m => new[] { m.left, m.right }.Max());
+            var compatible =
+                from left in dims
+                from right in dims
+                where left.Columns == right.Rows
+                let o = (left.Rows, right.Columns)
+                where dims.Contains(o)
+                select (left, right);
+            var multiplicationFunctions =
+                (from m in compatible
+                 from kvp in m.left == m.right ? new[] { (key: m.left, value: m) } : [(key: m.left, value: m), (key: m.right, value: m)]
+                 select kvp).ToLookup(m => m.key, m => m.value);
+            var multiplicationOperators = compatible.ToLookup(m => new[] { m.left, m.right }.Max());
 
             var matrixModels =
                 (from d in dims
-                    select new Matrix(d, dims, casts, multiplicationOperators[d])).ToList();
+                    select new Matrix(d, dims, casts, multiplicationFunctions[d], multiplicationOperators[d])).ToList();
 
             var extensions = new Extension[]
             {

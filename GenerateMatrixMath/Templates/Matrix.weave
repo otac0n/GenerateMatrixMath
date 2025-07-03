@@ -120,7 +120,6 @@ namespace Silk.NET.Maths
                 {{/each}});
 
         /// <inheridoc/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
 
         /// <inheridoc/>
@@ -216,6 +215,30 @@ namespace Silk.NET.Maths
             new({{each r in rows}}left.Row{{= r}} * right{{delimit}},
                 {{/each}});
 
+        {{if size.Columns < 5 && size.Rows < 5}}
+            {{
+                var outputType = new { Name = "Vector", Size = size.Columns };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name="rowVector">The first source matrix, expressed as a row vector.</param>
+            /// <param name="matrix">The second source matrix.</param>
+            /// <returns>The result of the multiplication as a column vector.</returns>
+            public static {{@Name outputType}}<T> operator *({{@Name columnType}}<T> rowVector, {{@Name thisType}}<T> matrix) =>
+                {{each r in rows}}rowVector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.Row{{= r}}{{delimit}} + {{/each}};
+
+        {{/if}}
+        {{if size.Rows < 5}}
+            {{
+                var outputType = new { Name = "Vector", Size = size.Rows };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name="matrix">The first source matrix.</param>
+            /// <param name="columnVector">The second source matrix, expressed as a column vector.</param>
+            /// <returns>The result of the multiplication as a row vector.</returns>
+            public static {{@Name outputType}}<T> operator *({{@Name thisType}}<T> matrix, {{@Name rowType}}<T> columnVector) =>
+                {{each c in cols}} matrix.Column{{= c}} * columnVector.{{= Vector.VectorFieldNames[c - 1]}}{{delimit}} + {{/each}};
+
+        {{/if}}
         {{each mul in model.MultiplyOperators}}
             {{
                 var middleSize = mul.Left.Columns;
@@ -261,6 +284,9 @@ namespace Silk.NET.Maths
         {{/each}}
     }
 
+    /// <summary>
+    /// Methods for working with <see cref="{{@Name thisType}}{T}"/>
+    /// </summary>
     public static partial class {{@Name thisType}}
     {
         /// <summary>Linearly interpolates between the corresponding values of two matrices.</summary>
@@ -272,5 +298,89 @@ namespace Silk.NET.Maths
             where T : IFloatingPointIeee754<T> =>
             new({{each r in rows}}{{@Name rowType}}.Lerp(value1.Row{{= r}}, value2.Row{{= r}}, amount){{delimit}},
                 {{/each}});
+
+        /// <summary>Adds two matrices together.</summary>
+        /// <param name="left">The first source matrix.</param>
+        /// <param name="right">The second source matrix.</param>
+        /// <returns>The result of the addition.</returns>
+        public static {{@Name thisType}}<T> Add<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T> =>
+            left + right;
+
+        /// <summary>Returns a negated copy of the specified matrix.</summary>
+        /// <param name="value">The source matrix.</param>
+        /// <returns>The negated matrix.</returns>
+        public static {{@Name thisType}}<T> Negate<T>({{@Name thisType}}<T> value)
+            where T : INumberBase<T>
+            => -value;
+
+        /// <summary>Subtracts the second matrix from the first.</summary>
+        /// <param name="left">The first source matrix.</param>
+        /// <param name="right">The second source matrix.</param>
+        /// <returns>The result of the subtraction.</returns>
+        public static {{@Name thisType}}<T> Subtract<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T>
+            => left - right;
+
+        /// <summary>Multiplies a matrix by a scalar value.</summary>
+        /// <param name="left">The source matrix.</param>
+        /// <param name="right">The scaling factor.</param>
+        /// <returns>The scaled matrix.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>({{@Name thisType}}<T> left, T right)
+            where T : INumberBase<T> =>
+            left * right;
+
+        /// <summary>Multiplies a matrix by a scalar value.</summary>
+        /// <param name="left">The scaling factor.</param>
+        /// <param name="right">The source matrix.</param>
+        /// <returns>The scaled matrix.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>(T left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T> =>
+            left * right;
+
+        {{if size.Columns < 5 && size.Rows < 5}}
+            {{
+                var outputType = new { Name = "Vector", Size = size.Columns };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name="rowVector">The first source matrix, expressed as a row vector.</param>
+            /// <param name="matrix">The second source matrix.</param>
+            /// <returns>The result of the multiplication as a column vector.</returns>
+            public static {{@Name outputType}}<T> Multiply<T>({{@Name columnType}}<T> rowVector, {{@Name thisType}}<T> matrix)
+                where T : INumberBase<T> =>
+                rowVector * matrix;
+
+        {{/if}}
+        {{if size.Rows < 5}}
+            {{
+                var outputType = new { Name = "Vector", Size = size.Rows };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name="matrix">The first source matrix.</param>
+            /// <param name="columnVector">The second source matrix, expressed as a column vector.</param>
+            /// <returns>The result of the multiplication as a row vector.</returns>
+            public static {{@Name outputType}}<T> Multiply<T>({{@Name thisType}}<T> matrix, {{@Name rowType}}<T> columnVector)
+                where T : INumberBase<T> =>
+                matrix * columnVector;
+
+        {{/if}}
+        {{each mul in model.MultiplyFunctions}}
+            {{
+                var middleSize = mul.Left.Columns;
+                var outputSize = new Dimension(mul.Left.Rows, mul.Right.Columns);
+                var outputType = new { Name = "Matrix", Size = outputSize };
+                var leftType = new { Name = "Matrix", Size = mul.Left };
+                var rightType = new { Name = "Matrix", Size = mul.Right };
+            }}
+            /// <summary>Multiplies a matrix by another matrix.</summary>
+            /// <param name="left">The first source matrix.</param>
+            /// <param name="right">The second source matrix.</param>
+            /// <returns>The result of the multiplication.</returns>
+            public static {{@Name outputType}}<T> Multiply<T>({{@Name leftType}}<T> left, {{@Name rightType}}<T> right)
+                where T : INumberBase<T> =>
+                left * right;
+        {{delimit}}
+
+        {{/each}}
     }
 }
