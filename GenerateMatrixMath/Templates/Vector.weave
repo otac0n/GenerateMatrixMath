@@ -354,6 +354,21 @@ namespace Silk.NET.Maths
             where TOther : INumberBase<TOther> =>
             {{@Name thisType}}<TOther>.CreateTruncating(this);
 
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public {{@Name thisType}}<TOther> AsChecked<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateChecked(this);
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public {{@Name thisType}}<TOther> AsSaturating<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateSaturating(this);
+
+        /// <summary>Converts the components of this vector to another type.</summary>
+        public {{@Name thisType}}<TOther> AsTruncating<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateTruncating(this);
+
         /// <summary>Implicitly casts a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
         public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) v) =>
             new({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
@@ -362,36 +377,78 @@ namespace Silk.NET.Maths
         public static implicit operator ({{each f in fields}}T {{= f}}{{delimit}}, {{/each}})({{@Name thisType}}<T> v) =>
             ({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Returns the given vector.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <returns>The source vector.</returns>
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> vector) =>
             vector;
 
+        /// <summary>Negates a given vector.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <returns>The negated vector.</returns>
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> vector) =>
             new({{each f in fields}}-vector.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Adds two vectors together.</summary>
+        /// <param name="left">The first source vector.</param>
+        /// <param name="right">The second source vector.</param>
+        /// <returns>The summed vector.</returns>
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each f in fields}}left.{{= f}} + right.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Subtracts the second vector from the first.</summary>
+        /// <param name="left">The first source vector.</param>
+        /// <param name="right">The second source vector.</param>
+        /// <returns>The difference vector.</returns>
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each f in fields}}left.{{= f}} - right.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Multiplies two vectors together.</summary>
+        /// <param name="left">The first source vector.</param>
+        /// <param name="right">The second source vector.</param>
+        /// <returns>The product vector.</returns>
         public static {{@Name thisType}}<T> operator *({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Divides the first vector by the second.</summary>
+        /// <param name="left">The first source vector.</param>
+        /// <param name="right">The second source vector.</param>
+        /// <returns>The vector resulting from the division.</returns>
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
             new({{each f in fields}}left.{{= f}} / right.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Adds a scalar to the components of a vector.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <param name="scalar">The scalar value.</param>
+        /// <returns>The offset vector.</returns>
         public static {{@Name thisType}}<T> operator +({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} + scalar{{delimit}}, {{/each}});
 
+        /// <summary>Subtracts a scalar from the components of a vector.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <param name="scalar">The scalar value.</param>
+        /// <returns>The offset vector.</returns>
         public static {{@Name thisType}}<T> operator -({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} - scalar{{delimit}}, {{/each}});
 
+        /// <summary>Multiplies a vector by the given scalar.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <param name="scalar">The scalar value.</param>
+        /// <returns>The scaled vector.</returns>
         public static {{@Name thisType}}<T> operator *({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} * scalar{{delimit}}, {{/each}});
 
+        /// <summary>Multiplies a vector by the given scalar.</summary>
+        /// <param name="scalar">The scalar value.</param>
+        /// <param name="vector">The source vector.</param>
+        /// <returns>The scaled vector.</returns>
         public static {{@Name thisType}}<T> operator *(T scalar, {{@Name thisType}}<T> vector) =>
             new({{each f in fields}}scalar * vector.{{= f}}{{delimit}}, {{/each}});
 
+        /// <summary>Divides the vector by the given scalar.</summary>
+        /// <param name="vector">The source vector.</param>
+        /// <param name="scalar">The scalar value.</param>
+        /// <returns>The result of the division.</returns>
         public static {{@Name thisType}}<T> operator /({{@Name thisType}}<T> vector, T scalar) =>
             new({{each f in fields}}vector.{{= f}} / scalar{{delimit}}, {{/each}});
 
@@ -419,8 +476,12 @@ namespace Silk.NET.Maths
         {{/each}}
     }
 
+    /// <summary>
+    /// Methods for working with <see cref="{{@Name thisType}}{T}"/>.
+    /// </summary>
     public static partial class {{@Name thisType}}
     {
+        /// <summary>Extensions for vectors with elements implementing <see cref="IRootFunctions{TSelf}"/>.</summary>
         extension<T>({{@Name thisType}}<T> vector)
             where T : IRootFunctions<T>
         {
@@ -428,6 +489,7 @@ namespace Silk.NET.Maths
             public T Length => T.Sqrt(vector.LengthSquared);
         }
 
+        /// <summary>Extensions for vectors with elements implementing <see cref="INumberBase{TSelf}"/>.</summary>
         extension<T>({{@Name thisType}}<T> vector)
             where T : INumberBase<T>
         {
@@ -436,6 +498,7 @@ namespace Silk.NET.Maths
         }
 
         /// <summary>Desconstructs a vector into its components.</summary>
+        /// <param name="vector">The vector to deconstruct.</param>
         {{each f in fields}}
             /// <param name="{{= f.ToLower()}}">The {{= f}} component.</param>
         {{/each}}
@@ -498,14 +561,21 @@ namespace Silk.NET.Maths
             new({{each f in fields}}T.Lerp(a.{{= f}}, b.{{= f}}, T.Clamp(amount.{{= f}}, T.Zero, T.One)){{delimit}},
                 {{/each}});
 
+        /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCos(TSelf)"/> to the provided arguments.</summary>
+        /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
         public static ({{@Name thisType}}<T> Sin, {{@Name thisType}}<T> Cos) SinCos<T>(this {{@Name thisType}}<T> x)
             where T : ITrigonometricFunctions<T> =>
             (new({{each f in fields}}T.Sin(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.Cos(x.{{= f}}){{delimit}}, {{/each}}));
 
+        /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCosPi(TSelf)"/> to the provided arguments.</summary>
+        /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
         public static ({{@Name thisType}}<T> SinPi, {{@Name thisType}}<T> CosPi) SinCosPi<T>(this {{@Name thisType}}<T> x)
             where T : ITrigonometricFunctions<T> =>
             (new({{each f in fields}}T.SinPi(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.CosPi(x.{{= f}}){{delimit}}, {{/each}}));
 
+        /// <summary>Applies <see cref="IBinaryInteger{TSelf}.DivRem(TSelf, TSelf)"/> to the provided arguments.</summary>
+        /// <param name="left">A vector whose members will be provided for <parameref name="left"/>.</param>
+        /// <param name="right">A vector whose members will be provided for <parameref name="right"/>.</param>
         public static ({{@Name thisType}}<T> Quotient, {{@Name thisType}}<T> Remainder) DivRem<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
             where T : IBinaryInteger<T>
         {

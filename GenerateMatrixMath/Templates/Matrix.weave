@@ -144,7 +144,7 @@ namespace Silk.NET.Maths
             new({{each r in rows}}{{@Name rowType}}<T>.CreateTruncating(other.Row{{= r}}){{delimit}}, {{/each}});
 
         /// <summary>Converts the components of this matrix to another type.</summary>
-        [Obsolete("Use CreateChecked, CreateSaturating, or CreateTruncating instead.", error: false)]
+        [Obsolete("Use AsChecked, AsSaturating, or AsTruncating instead.", error: false)]
         public {{@Name thisType}}<TOther> As<TOther>()
             where TOther : INumberBase<TOther> =>
             new({{each r in rows}}Row{{= r}}.As<TOther>(){{delimit}}, {{/each}});
@@ -300,7 +300,7 @@ namespace Silk.NET.Maths
     }
 
     /// <summary>
-    /// Methods for working with <see cref="{{@Name thisType}}{T}"/>
+    /// Methods for working with <see cref="{{@Name thisType}}{T}"/>.
     /// </summary>
     public static partial class {{@Name thisType}}
     {
