@@ -128,26 +128,41 @@ namespace Silk.NET.Maths
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}});
 
-        /// <summary>Converts the components of this vector to another type.</summary>
+        /// <summary>Converts the components of this matrix to another type.</summary>
         public static {{@Name thisType}}<T> CreateChecked<TOther>({{@Name thisType}}<TOther> other)
             where TOther : INumberBase<TOther> =>
             new({{each r in rows}}{{@Name rowType}}<T>.CreateChecked(other.Row{{= r}}){{delimit}}, {{/each}});
 
-        /// <summary>Converts the components of this vector to another type.</summary>
+        /// <summary>Converts the components of this matrix to another type.</summary>
         public static {{@Name thisType}}<T> CreateSaturating<TOther>({{@Name thisType}}<TOther> other)
             where TOther : INumberBase<TOther> =>
             new({{each r in rows}}{{@Name rowType}}<T>.CreateSaturating(other.Row{{= r}}){{delimit}}, {{/each}});
 
-        /// <summary>Converts the components of this vector to another type.</summary>
+        /// <summary>Converts the components of this matrix to another type.</summary>
         public static {{@Name thisType}}<T> CreateTruncating<TOther>({{@Name thisType}}<TOther> other)
             where TOther : INumberBase<TOther> =>
             new({{each r in rows}}{{@Name rowType}}<T>.CreateTruncating(other.Row{{= r}}){{delimit}}, {{/each}});
 
-        /// <summary>Converts the components of this vector to another type.</summary>
-        [Obsolete("Use CreateChecked, CreateSaturating, CreateTruncating or cast instead.", error: false)]
+        /// <summary>Converts the components of this matrix to another type.</summary>
+        [Obsolete("Use CreateChecked, CreateSaturating, or CreateTruncating instead.", error: false)]
         public {{@Name thisType}}<TOther> As<TOther>()
             where TOther : INumberBase<TOther> =>
             new({{each r in rows}}Row{{= r}}.As<TOther>(){{delimit}}, {{/each}});
+
+        /// <summary>Converts the components of this matrix to another type.</summary>
+        public {{@Name thisType}}<TOther> AsChecked<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateChecked(this);
+
+        /// <summary>Converts the components of this matrix to another type.</summary>
+        public {{@Name thisType}}<TOther> AsSaturating<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateSaturating(this);
+
+        /// <summary>Converts the components of this matrix to another type.</summary>
+        public {{@Name thisType}}<TOther> AsTruncating<TOther>()
+            where TOther : INumberBase<TOther> =>
+            {{@Name thisType}}<TOther>.CreateTruncating(this);
 
         {{
             var transposeSize = new Dimension(Rows: size.Columns, Columns: size.Rows);

@@ -349,7 +349,7 @@ namespace Silk.NET.Maths
             new({{each f in fields}}T.CreateTruncating(source.{{= f}}){{delimit}}, {{/each}});
 
         /// <summary>Converts the components of this vector to another type.</summary>
-        [Obsolete("Use CreateChecked, CreateSaturating, CreateTruncating, or a cast instead.", error: false)]
+        [Obsolete("Use AsChecked, AsSaturating, or AsTruncating instead.", error: false)]
         public {{@Name thisType}}<TOther> As<TOther>()
             where TOther : INumberBase<TOther> =>
             {{@Name thisType}}<TOther>.CreateTruncating(this);
