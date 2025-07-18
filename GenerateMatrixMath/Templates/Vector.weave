@@ -613,31 +613,37 @@ namespace Silk.NET.Maths
                 {
                     interName = interName.Substring(0, backTickIndex);
                 }
-                var method = inter.GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => m.Name == name && m.GetParameters().Length == extension.Arguments.Length).Single();
-                var parameters = method.GetParameters();
-                var arguments = parameters.Select((p, i) =>
-                {
-                    var memberwise = extension.Arguments[i] == ArgumentMultiplicity.Memberwise;
-                    return new
-                    {
-                        Memberwise = memberwise,
-                        Type = p.ParameterType,
-                        p.Name,
-                    };
-                });
-                var returnType = method.ReturnType;
+                var methods = inter.GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => m.Name == name && m.GetParameters().Length == extension.Arguments.Length);
             }}
-            /// <summary>Applies <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= Encode(a.Type).Replace('<', '{').Replace('>', '}')}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
-            {{each a in arguments}}
-                {{if a.Memberwise}}
-                    /// <param name="{{= a.Name}}">A vector whose members will be provided for <parameref name="{{= a.Name}}"/>.</param>
-                {{else}}
-                    /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
-                {{/if}}
+            {{each method in methods}}
+                {{
+                    var parameters = method.GetParameters();
+                    var arguments = parameters.Select((p, i) =>
+                    {
+                        var memberwise = extension.Arguments[i] == ArgumentMultiplicity.Memberwise;
+                        return new
+                        {
+                            Memberwise = memberwise,
+                            Type = p.ParameterType,
+                            p.Name,
+                        };
+                    });
+                    var returnType = method.ReturnType;
+                }}
+                /// <summary>Applies <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= Encode(a.Type).Replace('<', '{').Replace('>', '}')}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
+                {{each a in arguments}}
+                    {{if a.Memberwise}}
+                        /// <param name="{{= a.Name}}">A vector whose members will be provided for <parameref name="{{= a.Name}}"/>.</param>
+                    {{else}}
+                        /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
+                    {{/if}}
+                {{/each}}
+                public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
+                    where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
+                    new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
+            {{delimit}}
+
             {{/each}}
-            public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
-                where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
-                new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
         {{delimit}}
 
         {{/each}}

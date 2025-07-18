@@ -87,6 +87,7 @@
                 //new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
 
                 // IBinaryInteger<>
+                //new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.DivRem), [Memberwise, Memberwise]), // Manual, returns a tuple.
                 new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.PopCount), [Memberwise]),
                 new(typeof(IBinaryInteger<>), nameof(IBinaryInteger<>.TrailingZeroCount), [Memberwise]),
 
@@ -94,6 +95,7 @@
                 new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Ceiling), [Memberwise]),
                 new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Floor), [Memberwise]),
                 new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Round), [Memberwise]),
+                new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Round), [Memberwise, One]), // BOTH: int digits & MidpointRounding mode
                 new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Round), [Memberwise, One, One]),
                 new(typeof(IFloatingPoint<>), nameof(IFloatingPoint<>.Truncate), [Memberwise]),
 
@@ -104,6 +106,8 @@
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.BitDecrement), [Memberwise]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.BitIncrement), [Memberwise]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, Memberwise, Memberwise]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, Memberwise, One]),
+                new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, One, Memberwise]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.FusedMultiplyAdd), [Memberwise, One, One]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Ieee754Remainder), [Memberwise, Memberwise]),
                 new(typeof(IFloatingPointIeee754<>), nameof(IFloatingPointIeee754<>.Ieee754Remainder), [Memberwise, One]),
@@ -123,9 +127,11 @@
                 new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.RootN), [Memberwise, One]),
                 new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.RootN), [Memberwise, Memberwise]),
                 new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Hypot), [Memberwise, Memberwise]),
+                new(typeof(IRootFunctions<>), nameof(IRootFunctions<>.Hypot), [Memberwise, One]),
 
                 // ILogarithmicFunctions<>,
                 new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log), [Memberwise]),
+                new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log), [Memberwise, Memberwise]),
                 new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log), [Memberwise, One]),
                 new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.LogP1), [Memberwise]),
                 new(typeof(ILogarithmicFunctions<>), nameof(ILogarithmicFunctions<>.Log2), [Memberwise]),
@@ -152,6 +158,8 @@
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.CosPi), [Memberwise]),
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Sin), [Memberwise]),
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.SinPi), [Memberwise]),
+                //new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.SinCos), [Memberwise]), // Manual, returns a tuple.
+                //new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.SinCosPi), [Memberwise]), // Manual, returns a tuple.
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.Tan), [Memberwise]),
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.TanPi), [Memberwise]),
                 new(typeof(ITrigonometricFunctions<>), nameof(ITrigonometricFunctions<>.DegreesToRadians), [Memberwise]),
