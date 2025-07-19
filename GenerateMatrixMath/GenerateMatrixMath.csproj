@@ -17,8 +17,10 @@
   </ItemGroup>
   <ItemGroup>
     <WeaveTemplate Include="Templates\Matrix.weave" />
+    <WeaveTemplate Include="Templates\MatrixExt.weave" />
     <WeaveTemplate Include="Templates\Name.weave" />
     <WeaveTemplate Include="Templates\Vector.weave" />
+    <WeaveTemplate Include="Templates\VectorExt.weave" />
     <None Remove="Matrix.weave" />
   </ItemGroup>
 </Project>

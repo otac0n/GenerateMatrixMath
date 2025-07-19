@@ -1,0 +1,190 @@
+@namespace GenerateMatrixMath
+@encode Encode
+@using System.Reflection
+@using GenerateMatrixMath.Model
+@model Vector
+{{
+    var size = model.Size;
+    var fields = Vector.VectorFieldNames.Take(size);
+    var thisType = new { Name = "Vector", model.Size };
+}}
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Silk.NET.Maths
+{
+    using System.Numerics;
+
+    /// <summary>
+    /// Methods for working with <see cref="{{@Name thisType}}{T}"/>.
+    /// </summary>
+    public static partial class {{@Name thisType}}
+    {
+        /// <summary>Extensions for vectors with elements implementing <see cref="IRootFunctions{TSelf}"/>.</summary>
+        extension<T>({{@Name thisType}}<T> vector)
+            where T : IRootFunctions<T>
+        {
+            /// <summary>Gets the length of the vector.</summary>
+            public T Length => T.Sqrt(vector.LengthSquared);
+        }
+
+        /// <summary>Extensions for vectors with elements implementing <see cref="INumberBase{TSelf}"/>.</summary>
+        extension<T>({{@Name thisType}}<T> vector)
+            where T : INumberBase<T>
+        {
+            /// <summary>Gets the length squared of the vector.</summary>
+            public T LengthSquared => {{@Name thisType}}.Dot(vector, vector);
+        }
+
+        /// <summary>Desconstructs a vector into its components.</summary>
+        /// <param name="vector">The vector to deconstruct.</param>
+        {{each f in fields}}
+            /// <param name="{{= f.ToLower()}}">The {{= f}} component.</param>
+        {{/each}}
+        public static void Deconstruct<T>(this {{@Name thisType}}<T> vector, {{each f in fields}}out T {{= f.ToLower()}}{{delimit}}, {{/each}})
+            where T : INumberBase<T>
+        {
+            {{each f in fields}}
+                {{= f.ToLower()}} = vector.{{= f}};
+            {{/each}}
+        }
+
+        /// <summary>Computes the dot product of two vectors.</summary>
+        public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T> =>
+            {{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}} + {{/each}};
+
+        /// <summary>Reflects a vector over a normal vector.</summary>
+        public static {{@Name thisType}}<T> Reflect<T>({{@Name thisType}}<T> vector, {{@Name thisType}}<T> normal)
+            where T : INumberBase<T>
+        {
+            T dot = vector.Dot(normal);
+            return vector - (normal * (dot + dot));
+        }
+
+        /// <summary>Normalizes a vector.</summary>
+        public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
+            where T : IRootFunctions<T>
+        {
+            T length = vector.Length;
+            return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
+        }
+
+        /// <summary>Returns the Euclidean distance between the two given points.</summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The distance.</returns>
+        public static T Distance<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+            where T : IRootFunctions<T> =>
+            T.Sqrt(DistanceSquared(value1, value2));
+
+        /// <summary>Returns the Euclidean distance squared between the two given points.</summary>
+        /// <param name="value1">The first point.</param>
+        /// <param name="value2">The second point.</param>
+        /// <returns>The distance squared.</returns>
+        public static T DistanceSquared<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+            where T : INumberBase<T>
+        {
+            var difference = value1 - value2;
+            return Dot(difference, difference);
+        }
+
+        /// <summary>Linearly interpolates between two vectors using a scalar t-value (clamped between 0 and 1).</summary>
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, T amount)
+            where T : IFloatingPointIeee754<T> =>
+            Lerp(a, b, T.Clamp(amount, T.Zero, T.One));
+
+        /// <summary>Linearly interpolates between two vectors using a vector t-value (clamped between 0 and 1).</summary>
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, {{@Name thisType}}<T> amount)
+            where T : IFloatingPointIeee754<T> =>
+            new({{each f in fields}}T.Lerp(a.{{= f}}, b.{{= f}}, T.Clamp(amount.{{= f}}, T.Zero, T.One)){{delimit}},
+                {{/each}});
+
+        /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCos(TSelf)"/> to the provided arguments.</summary>
+        /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
+        public static ({{@Name thisType}}<T> Sin, {{@Name thisType}}<T> Cos) SinCos<T>(this {{@Name thisType}}<T> x)
+            where T : ITrigonometricFunctions<T> =>
+            (new({{each f in fields}}T.Sin(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.Cos(x.{{= f}}){{delimit}}, {{/each}}));
+
+        /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCosPi(TSelf)"/> to the provided arguments.</summary>
+        /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
+        public static ({{@Name thisType}}<T> SinPi, {{@Name thisType}}<T> CosPi) SinCosPi<T>(this {{@Name thisType}}<T> x)
+            where T : ITrigonometricFunctions<T> =>
+            (new({{each f in fields}}T.SinPi(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.CosPi(x.{{= f}}){{delimit}}, {{/each}}));
+
+        /// <summary>Applies <see cref="IBinaryInteger{TSelf}.DivRem(TSelf, TSelf)"/> to the provided arguments.</summary>
+        /// <param name="left">A vector whose members will be provided for <parameref name="left"/>.</param>
+        /// <param name="right">A vector whose members will be provided for <parameref name="right"/>.</param>
+        public static ({{@Name thisType}}<T> Quotient, {{@Name thisType}}<T> Remainder) DivRem<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+            where T : IBinaryInteger<T>
+        {
+            {{each f in fields}}
+                var (q{{= f}}, r{{= f}}) = T.DivRem(left.{{= f}}, right.{{= f}});
+            {{/each}}
+            return (new {{@Name thisType}}<T>({{each f in fields}}q{{= f}}{{delimit}}, {{/each}}), new {{@Name thisType}}<T>({{each f in fields}}r{{= f}}{{delimit}}, {{/each}}));
+        }
+
+        /// <summary>Multiplies a vector by a scalar value.</summary>
+        /// <param name="left">The source vector.</param>
+        /// <param name="right">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>({{@Name thisType}}<T> left, T right)
+            where T : INumberBase<T> =>
+            left * right;
+
+        /// <summary>Multiplies a vector by a scalar value.</summary>
+        /// <param name="left">The scaling factor.</param>
+        /// <param name="right">The source vector.</param>
+        /// <returns>The scaled vector.</returns>
+        public static {{@Name thisType}}<T> Multiply<T>(T left, {{@Name thisType}}<T> right)
+            where T : INumberBase<T> =>
+            left * right;
+
+        {{each extension in model.Extensions}}
+            {{
+                var inter = extension.Type;
+                var t = inter.GetGenericArguments().Single();
+
+                var name = extension.Name;
+                var interName = inter.Name;
+                var backTickIndex = interName.IndexOf('`');
+                if (backTickIndex > 0)
+                {
+                    interName = interName.Substring(0, backTickIndex);
+                }
+                var methods = inter.GetMethods(BindingFlags.Public | BindingFlags.Static).Where(m => m.Name == name && m.GetParameters().Length == extension.Arguments.Length);
+            }}
+            {{each method in methods}}
+                {{
+                    var parameters = method.GetParameters();
+                    var arguments = parameters.Select((p, i) =>
+                    {
+                        var memberwise = extension.Arguments[i] == ArgumentMultiplicity.Memberwise;
+                        return new
+                        {
+                            Memberwise = memberwise,
+                            Type = p.ParameterType,
+                            p.Name,
+                        };
+                    });
+                    var returnType = method.ReturnType;
+                }}
+                /// <summary>Applies <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{= name}}({{each a in arguments}}{{= Encode(a.Type).Replace('<', '{').Replace('>', '}')}}{{delimit}}, {{/each}})"/> to the provided arguments.</summary>
+                {{each a in arguments}}
+                    {{if a.Memberwise}}
+                        /// <param name="{{= a.Name}}">A vector whose members will be provided for <parameref name="{{= a.Name}}"/>.</param>
+                    {{else}}
+                        /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
+                    {{/if}}
+                {{/each}}
+                public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
+                    where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
+                    new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
+            {{delimit}}
+
+            {{/each}}
+        {{delimit}}
+
+        {{/each}}
+    }
+}

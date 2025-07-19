@@ -186,19 +186,39 @@
                 foreach (var model in matrixModels)
                 {
                     var name = Templates.Name(new { Name = "Matrix", model.Size });
-                    var path = Path.Combine(outputPath, $"{name}.gen.cs");
-                    using var writer = new StreamWriter(path);
-                    Templates.RenderMatrix(model, writer);
-                    Console.WriteLine($"Wrote {name}");
+
+                    {
+                        var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderMatrix(model, writer);
+                        Console.WriteLine($"Wrote {Path.GetFileName(path)}");
+                    }
+
+                    {
+                        var path = Path.Combine(outputPath, $"{name}.Ops.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderMatrixExt(model, writer);
+                        Console.WriteLine($"Wrote {Path.GetFileName(path)}");
+                    }
                 }
 
                 foreach (var model in vectorModels)
                 {
                     var name = Templates.Name(new { Name = "Vector", model.Size });
-                    var path = Path.Combine(outputPath, $"{name}.gen.cs");
-                    using var writer = new StreamWriter(path);
-                    Templates.RenderVector(model, writer);
-                    Console.WriteLine($"Wrote {name}");
+
+                    {
+                        var path = Path.Combine(outputPath, $"{name}.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderVector(model, writer);
+                        Console.WriteLine($"Wrote {Path.GetFileName(path)}");
+                    }
+
+                    {
+                        var path = Path.Combine(outputPath, $"{name}.Ops.gen.cs");
+                        using var writer = new StreamWriter(path);
+                        Templates.RenderVectorExt(model, writer);
+                        Console.WriteLine($"Wrote {Path.GetFileName(path)}");
+                    }
                 }
             }
         }
