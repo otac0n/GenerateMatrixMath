@@ -34,7 +34,7 @@ namespace Silk.NET.Maths
         where T : INumberBase<T>
     {
         {{if size.Rows == size.Columns}}
-            /// <summary>The multiplicative identity matrix of size {{= size}}.</summary>
+            /// <summary>Gets the multiplicative identity matrix of size {{= size}}.</summary>
             public static {{@Name thisType}}<T> Identity { get; } = new({{each r in rows}}
                 new({{each c in cols}}{{if r == c}}T.MultiplicativeIdentity{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
 
@@ -57,15 +57,11 @@ namespace Silk.NET.Maths
 
             {{/each}}
         {{/if}}
-        /// <summary>
-        /// Constructs a <see cref="{{@Name thisType}}{T}"/> from the given rows.
-        /// </summary>
+        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given rows.</summary>
         public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) =>
             ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
 
-        /// <summary>
-        /// Constructs a <see cref="{{@Name thisType}}{T}"/> from the given components.
-        /// </summary>
+        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given components.</summary>
         public {{@Name thisType}}(
             {{each r in rows}}{{each c in cols}}T m{{= r}}{{= c}}{{delimit}}, {{/each}}{{delimit}},
             {{/each}})
