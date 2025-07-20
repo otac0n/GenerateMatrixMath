@@ -57,20 +57,15 @@ namespace Silk.NET.Maths
 
             {{/each}}
         {{/if}}
-        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given rows.</summary>
-        public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) =>
-            ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
+        {{each r in rows}}
+            {{each c in cols}}
+                /// <summary>Gets the element in the {{@Ordinal r}} row and {{@Ordinal c}} column of the matrix.</summary>
+                [DataMember]
+                [UnscopedRef]
+                public ref T M{{= r}}{{= c}} => ref Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
 
-        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given components.</summary>
-        public {{@Name thisType}}(
-            {{each r in rows}}{{each c in cols}}T m{{= r}}{{= c}}{{delimit}}, {{/each}}{{delimit}},
-            {{/each}})
-        {
-            {{each r in rows}}
-                Row{{= r}} = new({{each c in cols}}m{{= r}}{{= c}}{{delimit}}, {{/each}});
             {{/each}}
-        }
-
+        {{/each}}
         /// <summary>
         /// Indexer for the rows of this matrix.
         /// </summary>
@@ -100,15 +95,19 @@ namespace Silk.NET.Maths
         [UnscopedRef]
         public ref T this[int row, int column] => ref this[row][column];
 
-        {{each r in rows}}
-            {{each c in cols}}
-                /// <summary>Gets the element in the {{@Ordinal r}} row and {{@Ordinal c}} column of the matrix.</summary>
-                [DataMember]
-                [UnscopedRef]
-                public ref T M{{= r}}{{= c}} => ref Row{{= r}}.{{= Vector.VectorFieldNames[c - 1]}};
+        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given rows.</summary>
+        public {{@Name thisType}}({{each r in rows}}{{@Name rowType}}<T> row{{= r}}{{delimit}}, {{/each}}) =>
+            ({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}}) = ({{each r in rows}}row{{= r}}{{delimit}}, {{/each}});
 
+        /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given components.</summary>
+        public {{@Name thisType}}(
+            {{each r in rows}}{{each c in cols}}T m{{= r}}{{= c}}{{delimit}}, {{/each}}{{delimit}},
+            {{/each}})
+        {
+            {{each r in rows}}
+                Row{{= r}} = new({{each c in cols}}m{{= r}}{{= c}}{{delimit}}, {{/each}});
             {{/each}}
-        {{/each}}
+        }
 
         {{
             var open = "{{";

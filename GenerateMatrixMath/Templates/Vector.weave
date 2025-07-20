@@ -31,11 +31,46 @@ namespace Silk.NET.Maths
         IUtf8SpanParsable<{{@Name thisType}}<T>>
         where T : INumberBase<T>
     {
+        /// <summary>Gets a vector whose {{= size}} elements are equal to one.</summary>
+        public static {{@Name thisType}}<T> One => new(T.One);
+
+        /// <summary>Returns a vector whose {{= size}} elements are equal to zero.</summary>
+        public static {{@Name thisType}}<T> Zero => default;
+
+        {{each i in Enumerable.Range(0, size)}}
+            /// <summary>Gets the vector ({{each j in Enumerable.Range(0, size)}}{{if i == j}}1{{else}}0{{/if}}{{delimit}}, {{/each}}).</summary>
+            public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
+
+        {{/each}}
         {{each f in fields}}
             /// <summary>The {{= f}} component of the vector.</summary>
             public T {{= f}};
 
         {{/each}}
+        /// <summary>The number of elements in the vector.</summary>
+        public int Count => {{= size}};
+
+        /// <inheritdoc/>
+        T IReadOnlyList<T>.this[int index] => this[index];
+
+        ///<summary>Gets the component at the specified index: {{each i in Enumerable.Range(0, size)}}{{= i}} = {{= Vector.VectorFieldNames[i]}}{{delimit}}, {{/each}}. </summary>
+        [UnscopedRef]
+        public ref T this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    {{each i in Enumerable.Range(0, size)}}
+                        case {{= i}}:
+                            return ref {{= Vector.VectorFieldNames[i]}};
+                    {{/each}}
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
         /// <summary>Initializes all components of the vector to the same value.</summary>
         public {{@Name thisType}}(T value) => ({{each f in fields}}{{= f}}{{delimit}}, {{/each}}) = ({{each f in fields}}value{{delimit}}, {{/each}});
 
@@ -60,42 +95,6 @@ namespace Silk.NET.Maths
                 {{= Vector.VectorFieldNames[i]}} = values[{{= i}}];
             {{/each}}
         }
-
-        /// <summary>Gets a vector whose {{= size}} elements are equal to one.</summary>
-        public static {{@Name thisType}}<T> One => new(T.One);
-
-        /// <summary>Returns a vector whose {{= size}} elements are equal to zero.</summary>
-        public static {{@Name thisType}}<T> Zero => default;
-
-        {{each i in Enumerable.Range(0, size)}}
-            /// <summary>Gets the vector ({{each j in Enumerable.Range(0, size)}}{{if i == j}}1{{else}}0{{/if}}{{delimit}}, {{/each}}).</summary>
-            public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
-
-        {{/each}}
-
-        /// <inheritdoc/>
-        T IReadOnlyList<T>.this[int index] => this[index];
-
-        ///<summary>Gets the component at the specified index: {{each i in Enumerable.Range(0, size)}}{{= i}} = {{= Vector.VectorFieldNames[i]}}{{delimit}}, {{/each}}. </summary>
-        [UnscopedRef]
-        public ref T this[int index]
-        {
-            get
-            {
-                switch (index)
-                {
-                    {{each i in Enumerable.Range(0, size)}}
-                        case {{= i}}:
-                            return ref {{= Vector.VectorFieldNames[i]}};
-                    {{/each}}
-                }
-
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-        }
-
-        /// <summary>The number of elements in the vector.</summary>
-        public int Count => {{= size}};
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
