@@ -18,6 +18,7 @@ namespace Silk.NET.Maths
     using System.Collections;
     using System.Diagnostics.CodeAnalysis;
     using System.Numerics;
+    using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
     using System.Text;
 
@@ -34,14 +35,26 @@ namespace Silk.NET.Maths
         where T : INumberBase<T>
     {
         /// <summary>Gets a vector whose {{= size}} elements are equal to one.</summary>
-        public static {{@Name thisType}}<T> One => new(T.One);
+        public static {{@Name thisType}}<T> One
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => new(T.One);
+        }
 
         /// <summary>Returns a vector whose {{= size}} elements are equal to zero.</summary>
-        public static {{@Name thisType}}<T> Zero => default;
+        public static {{@Name thisType}}<T> Zero
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => new(T.Zero);
+        }
 
         {{each i in Enumerable.Range(0, size)}}
             /// <summary>Gets the vector ({{each j in Enumerable.Range(0, size)}}{{if i == j}}1{{else}}0{{/if}}{{delimit}}, {{/each}}).</summary>
-            public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}} => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<T> Unit{{= Vector.VectorFieldNames[i]}}
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => new({{each j in Enumerable.Range(0, size)}}{{if i == j}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
+            }
 
         {{/each}}
         {{each f in fields}}

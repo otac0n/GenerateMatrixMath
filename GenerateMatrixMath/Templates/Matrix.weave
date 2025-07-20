@@ -38,7 +38,7 @@ namespace Silk.NET.Maths
         {{if size.Rows == size.Columns}}
             /// <summary>Gets the multiplicative identity matrix of size {{= size}}.</summary>
             public static {{@Name thisType}}<T> Identity { get; } = new({{each r in rows}}
-                new({{each c in cols}}{{if r == c}}T.MultiplicativeIdentity{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
+                new({{each c in cols}}{{if r == c}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}}){{delimit}},{{/each}});
 
             /// <summary>Returns whether the matrix is the identity matrix.</summary>
             [IgnoreDataMember]
