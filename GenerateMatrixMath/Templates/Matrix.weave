@@ -15,6 +15,8 @@
     var thisType = new { Name = "Matrix", model.Size };
     var rowType = new { Name = "Vector", Size = size.Columns };
     var columnType = new { Name = "Vector", Size = size.Rows };
+    var numericsName = "Matrix" + model.Size;
+    var generateNumericsCast = model.NumericsTypes.Any(t => t.Name == numericsName);
 }}
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
@@ -270,10 +272,30 @@ namespace Silk.NET.Maths
             public static {{@Name outputType}}<T> operator *({{@Name leftType}}<T> left, {{@Name rightType}}<T> right) =>
                 new({{each r in Enumerable.Range(1, outputSize.Rows)}}{{each m in Enumerable.Range(1, middleSize)}}left.M{{= r}}{{= m}} * right.Row{{= m}}{{delimit}} + {{/each}}{{delimit}},
                     {{/each}});
-        {{delimit}}
 
         {{/each}}
+        {{if generateNumericsCast}}
+            /// <summary>Converts a <see cref="{{= numericsName}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
+            public static explicit operator {{@Name thisType}}<T>({{= numericsName}} from) =>
+                new({{each r in rows}}{{each c in cols}}T.CreateTruncating(from.M{{= r}}{{= c}}){{delimit}}, {{/each}}{{delimit}},
+                    {{/each}});
 
+            /// <summary>Converts a <see cref="{{= numericsName}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
+            public static explicit operator checked {{@Name thisType}}<T>({{= numericsName}} from) =>
+                new({{each r in rows}}{{each c in cols}}T.CreateChecked(from.M{{= r}}{{= c}}){{delimit}}, {{/each}}{{delimit}},
+                    {{/each}});
+
+            /// <summary>Converts a <see cref="{{@Name thisType}}{T}"/> to <see cref="{{= numericsName}}"/>.</summary>
+            public static explicit operator {{= numericsName}}({{@Name thisType}}<T> from) =>
+                new({{each r in rows}}{{each c in cols}}float.CreateTruncating(from.M{{= r}}{{= c}}){{delimit}}, {{/each}}{{delimit}},
+                    {{/each}});
+
+            /// <summary>Converts a <see cref="{{@Name thisType}}{T}"/> to <see cref="{{= numericsName}}"/>.</summary>
+            public static explicit operator checked {{= numericsName}}({{@Name thisType}}<T> from) =>
+                new({{each r in rows}}{{each c in cols}}float.CreateChecked(from.M{{= r}}{{= c}}){{delimit}}, {{/each}}{{delimit}},
+                    {{/each}});
+
+        {{/if}}
         {{each type in model.Casts}}
             {{
                 var typeName = Encode(type);

@@ -24,6 +24,15 @@
                 typeof(ulong),
             };
 
+            var numericsTypes = new[]
+            {
+                typeof(Vector2),
+                typeof(Vector3),
+                typeof(Vector4),
+                typeof(Matrix3x2),
+                typeof(Matrix4x4),
+            };
+
             var outputPaths = new[] {
                 @"C:\Users\otac0n\Projects\Silk.NET\sources\Maths\Maths\",
                 @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\",
@@ -55,7 +64,7 @@
 
             var matrixModels =
                 (from d in dims
-                    select new Matrix(d, dims, casts, multiplicationFunctions[d], multiplicationOperators[d])).ToList();
+                    select new Matrix(d, dims, casts, numericsTypes, multiplicationFunctions[d], multiplicationOperators[d])).ToList();
 
             var extensions = new Extension[]
             {
@@ -177,7 +186,7 @@
             var sizes = Enumerable.Range(2, 3);
             var vectorModels =
                 (from d in sizes
-                    select new Model.Vector(d, sizes, casts, extensions)).ToList();
+                    select new Model.Vector(d, sizes, casts, numericsTypes, extensions)).ToList();
 
             foreach (var outputPath in outputPaths)
             {
