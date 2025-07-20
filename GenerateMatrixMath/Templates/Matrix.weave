@@ -175,7 +175,7 @@ namespace Silk.NET.Maths
             }}
             /// <summary>Computes the transpose of the matrix.</summary>
             public {{@Name transposeType}}<T> Transpose() =>
-                new({{each c in cols}}new({{each r in rows}}M{{= r}}{{= c}}{{delimit}}, {{/each}}){{delimit}},
+                new({{each c in cols}}Column{{= c}}{{delimit}},
                     {{/each}});
 
         {{/if}}
