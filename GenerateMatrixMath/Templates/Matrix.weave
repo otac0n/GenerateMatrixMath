@@ -35,27 +35,6 @@ namespace Silk.NET.Maths
         IEquatable<{{@Name thisType}}<T>>
         where T : INumberBase<T>
     {
-            {{each s in model.AllSizes.Where(s => s != model.Size).OrderBy(s => s.Rows).ThenBy(s => s.Columns)}}
-            {{
-                var fromType = new { Name = "Matrix", Size = s };
-            }}
-            /// <summary>Constructs a <see cref="{{@Name thisType}}{T}"/> from the given <see cref="{{@Name fromType}}{T}"/>.</summary>
-            /// <param name="value">The source <see cref="{{@Name fromType}}{T}"/>.</param>
-            public {{@Name thisType}}({{@Name fromType}}<T> value)
-            {
-                {{each r in rows}}
-                    {{if r <= s.Rows}}
-                        Row{{= r}} = new({{each c in cols}}{{if c <= s.Columns}}value.M{{= r}}{{= c}}{{elif c == r}}T.One{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
-                    {{elif r <= Vector.VectorFieldNames.Count}}
-                        Row{{= r}} = {{@Name rowType}}<T>.Unit{{= Vector.VectorFieldNames[r - 1]}};
-                    {{else}}
-                        Row{{= r}} = {{@Name rowType}}<T>.Zero;
-                    {{/if}}
-                {{/each}}
-            }
-
-        {{/each}}
-
         {{if size.Rows == size.Columns}}
             /// <summary>Gets the multiplicative identity matrix of size {{= size}}.</summary>
             public static {{@Name thisType}}<T> Identity { get; } = new({{each r in rows}}
