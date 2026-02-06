@@ -156,11 +156,13 @@ namespace Silk.NET.Maths
         public Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref {{= Vector.VectorFieldNames[0]}}, {{= size}});
 
         /// <summary>Formats the vector as a string.</summary>
+        /// <returns>The string representation.</returns>
         public override string ToString() =>
             $"<{{each f in fields}}{{= "{" }}{{= f}}{{= "}"}}{{delimit}}, {{/each}}>";
 
         /// <summary>Formats the vector as a string using the specified format and format provider.</summary>
-        public string ToString(string? format, IFormatProvider? formatProvider) =>
+        /// <returns>The string representation.</returns>
+        public string ToString(string? format, IFormatProvider? formatProvider = null) =>
             $"<{{each f in fields}}{{= "{" }}{{= f}}.ToString(format, formatProvider){{= "}"}}{{delimit}}, {{/each}}>";
 
         /// <summary>Parses a string to a <see cref="{{@Name thisType}}{T}"/> instance.</summary>

@@ -33,9 +33,22 @@
                 typeof(Matrix4x4),
             };
 
+            var intrinsics = new[]
+            {
+                typeof(float),
+                typeof(double),
+                typeof(byte),
+                typeof(short),
+                typeof(int),
+                typeof(long),
+                typeof(sbyte),
+                typeof(ushort),
+                typeof(uint),
+                typeof(ulong),
+            };
+
             var outputPaths = new[] {
                 @"C:\Users\otac0n\Projects\Silk.NET\sources\Maths\Maths\",
-                @"C:\Users\otac0n\Projects\GenerateMatrixMath\DemoLibrary\",
             };
 
             var dims = new HashSet<Dimension>();
@@ -89,8 +102,10 @@
                 new(typeof(INumberBase<>), nameof(INumberBase<>.MaxMagnitudeNumber), [Memberwise, Memberwise]),
                 new(typeof(INumberBase<>), nameof(INumberBase<>.MinMagnitude), [Memberwise, Memberwise]),
                 new(typeof(INumberBase<>), nameof(INumberBase<>.MinMagnitudeNumber), [Memberwise, Memberwise]),
-                //new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, Memberwise, Memberwise]), // DOTNET>=9
-                //new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, One, One]), // DOTNET>=9
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, Memberwise, Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, Memberwise, One]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, One, Memberwise]),
+                new(typeof(INumberBase<>), nameof(INumberBase<>.MultiplyAddEstimate), [Memberwise, One, One]),
 
                 // IBinaryNumber<>
                 //new(typeof(IBinaryNumber<>), nameof(IBinaryNumber<>.Log2), [Memberwise]),
@@ -186,7 +201,7 @@
             var sizes = Enumerable.Range(2, 3);
             var vectorModels =
                 (from d in sizes
-                    select new Model.Vector(d, sizes, casts, numericsTypes, extensions)).ToList();
+                    select new Model.Vector(d, sizes, dims, casts, numericsTypes, intrinsics, extensions)).ToList();
 
             foreach (var outputPath in outputPaths)
             {

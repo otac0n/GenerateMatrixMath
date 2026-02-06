@@ -1,6 +1,7 @@
 @namespace GenerateMatrixMath
 @encode Encode
 @using System.Reflection
+@using System.Runtime.InteropServices
 @using GenerateMatrixMath.Model
 @model Vector
 {{
@@ -14,6 +15,7 @@
 namespace Silk.NET.Maths
 {
     using System.Numerics;
+    using System.Runtime.Intrinsics;
 
     /// <summary>
     /// Methods for working with <see cref="{{@Name thisType}}{T}"/>.
@@ -50,7 +52,7 @@ namespace Silk.NET.Maths
         }
 
         /// <summary>Computes the dot product of two vectors.</summary>
-        public static T Dot<T>(this {{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
+        public static T Dot<T>({{@Name thisType}}<T> left, {{@Name thisType}}<T> right)
             where T : INumberBase<T> =>
             {{each f in fields}}left.{{= f}} * right.{{= f}}{{delimit}} + {{/each}};
 
@@ -58,17 +60,14 @@ namespace Silk.NET.Maths
         public static {{@Name thisType}}<T> Reflect<T>({{@Name thisType}}<T> vector, {{@Name thisType}}<T> normal)
             where T : INumberBase<T>
         {
-            T dot = vector.Dot(normal);
+            T dot = Dot(vector, normal);
             return vector - (normal * (dot + dot));
         }
 
         /// <summary>Normalizes a vector.</summary>
         public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
             where T : IRootFunctions<T>
-        {
-            T length = vector.Length;
-            return length != T.Zero ? vector / length : {{@Name thisType}}<T>.Zero;
-        }
+            => vector / vector.Length;
 
         /// <summary>Returns the Euclidean distance between the two given points.</summary>
         /// <param name="value1">The first point.</param>
@@ -89,6 +88,33 @@ namespace Silk.NET.Maths
             return Dot(difference, difference);
         }
 
+        /// <summary>Applies <see cref="IFloatingPoint{TSelf}.Round(TSelf)"/> to each member of the vector and converts to integer.</summary>
+        public static {{@Name thisType}}<int> RoundToInt<T>({{@Name thisType}}<T> vector)
+            where T : IFloatingPoint<T> =>
+            {{@Name thisType}}.Round(vector).AsChecked<int>();
+
+        /// <summary>Applies <see cref="IFloatingPoint{TSelf}.Floor(TSelf)"/> to each member of the vector and converts to integer.</summary>
+        public static {{@Name thisType}}<int> FloorToInt<T>({{@Name thisType}}<T> vector)
+            where T : IFloatingPoint<T> =>
+            {{@Name thisType}}.Floor(vector).AsChecked<int>();
+
+        /// <summary>Applies <see cref="IFloatingPoint{TSelf}.Ceiling(TSelf)"/> to each member of the vector and converts to integer.</summary>
+        public static {{@Name thisType}}<int> CeilingToInt<T>({{@Name thisType}}<T> vector)
+            where T : IFloatingPoint<T> =>
+            {{@Name thisType}}.Ceiling(vector).AsChecked<int>();
+
+        {{each intrinsic in model.Intrinsics}}
+            {{ var byteSize = Marshal.SizeOf(intrinsic); }}
+            {{ var bitSize = byteSize * size * 8; }}
+            {{each storage in new[] { 64, 128, 256, 512 } }}
+                {{if bitSize <= storage}}
+                    /// <summary>Converts a <see cref="{{@Name thisType}}{T}"/> to a <see cref="Vector{{= storage}}{T}"/>.</summary>
+                    public static Vector{{= storage}}<{{: intrinsic}}> ToVector{{= storage}}({{@Name thisType}}<{{: intrinsic}}> vector)
+                        => Vector{{= storage}}.Create({{each i in Enumerable.Range(1, storage / (byteSize * 8))}}{{if i <= size}}vector.{{= Vector.VectorFieldNames[i - 1]}}{{else}}({{: intrinsic}})0{{/if}}{{delimit}}, {{/each}});
+
+                {{/if}}
+            {{/each}}
+        {{/each}}
         /// <summary>Linearly interpolates between two vectors using a scalar t-value (clamped between 0 and 1).</summary>
         public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, T amount)
             where T : IFloatingPointIeee754<T> =>
@@ -102,13 +128,13 @@ namespace Silk.NET.Maths
 
         /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCos(TSelf)"/> to the provided arguments.</summary>
         /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
-        public static ({{@Name thisType}}<T> Sin, {{@Name thisType}}<T> Cos) SinCos<T>(this {{@Name thisType}}<T> x)
+        public static ({{@Name thisType}}<T> Sin, {{@Name thisType}}<T> Cos) SinCos<T>({{@Name thisType}}<T> x)
             where T : ITrigonometricFunctions<T> =>
             (new({{each f in fields}}T.Sin(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.Cos(x.{{= f}}){{delimit}}, {{/each}}));
 
         /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCosPi(TSelf)"/> to the provided arguments.</summary>
         /// <param name="x">A vector whose members will be provided for <parameref name="x"/>.</param>
-        public static ({{@Name thisType}}<T> SinPi, {{@Name thisType}}<T> CosPi) SinCosPi<T>(this {{@Name thisType}}<T> x)
+        public static ({{@Name thisType}}<T> SinPi, {{@Name thisType}}<T> CosPi) SinCosPi<T>({{@Name thisType}}<T> x)
             where T : ITrigonometricFunctions<T> =>
             (new({{each f in fields}}T.SinPi(x.{{= f}}){{delimit}}, {{/each}}), new({{each f in fields}}T.CosPi(x.{{= f}}){{delimit}}, {{/each}}));
 
@@ -177,7 +203,7 @@ namespace Silk.NET.Maths
                         /// <param name="{{= a.Name}}">A single value provided for <parameref name="{{= a.Name}}"/>.</param>
                     {{/if}}
                 {{/each}}
-                public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>(this {{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
+                public static {{@Name thisType}}<{{: returnType}}> {{= name}}<{{= t}}>({{each a in arguments}}{{wrapif a.Memberwise}}{{@Name thisType}}<{{body}}{{: a.Type}}{{/body}}>{{/wrapif}} {{= a.Name}}{{delimit}}, {{/each}})
                     where {{= t}} : {{= method.DeclaringType.Name.Split('`')[0]}}<{{= t}}> =>
                     new({{each f in fields}}{{= t}}.{{= name}}({{each a in arguments}}{{= a.Name}}{{if a.Memberwise}}.{{= f}}{{/if}}{{delimit}}, {{/each}}){{delimit}}, {{/each}});
             {{delimit}}
@@ -185,6 +211,56 @@ namespace Silk.NET.Maths
             {{/each}}
         {{delimit}}
 
+        {{/each}}
+        {{each normal in new[] { false, true } }}
+            {{each inputSize in model.Sizes.Where(s => s <= size)}}
+                {{ var inputType = new { Name = "Vector", Size = inputSize }; }}
+
+                /// <summary>Transforms the given vector by the specified Quaternion.</summary>
+                public static {{@Name thisType}}<T> Transform{{if normal}}Normal{{/if}}<T>({{@Name inputType}}<T> vector, Quaternion<T> quaternion)
+                    where T : INumber<T>, IRootFunctions<T>, ITrigonometricFunctions<T>
+                {
+                    var x2 = quaternion.X + quaternion.X;
+                    var y2 = quaternion.Y + quaternion.Y;
+                    var z2 = quaternion.Z + quaternion.Z;
+
+                    var wx2 = quaternion.W * x2;
+                    var wy2 = quaternion.W * y2;
+                    var wz2 = quaternion.W * z2;
+                    var xx2 = quaternion.X * x2;
+                    var xy2 = quaternion.X * y2;
+                    var xz2 = quaternion.X * z2;
+                    var yy2 = quaternion.Y * y2;
+                    var yz2 = quaternion.Y * z2;
+                    var zz2 = quaternion.Z * z2;
+
+                    return new(
+                        {{each i in Enumerable.Range(1, size)}}{{if i == 1}}(vector.X * (T.One - yy2 - zz2)) + (vector.Y * (xy2 - wz2)){{if inputSize >= 3}} + (vector.Z * (xz2 + wy2)){{/if}}{{elif i == 2}}(vector.X * (xy2 + wz2)) + (vector.Y * (T.One - xx2 - zz2)){{if inputSize >= 3}} + (vector.Z * (yz2 - wx2)){{/if}}{{elif i == 3}}(vector.X * (xz2 - wy2)) + (vector.Y * (yz2 + wx2)){{if inputSize >= 3}} + (vector.Z * (T.One - xx2 - yy2)){{/if}}{{elif i == 4}}{{if inputSize >= 4}}vector.W{{else}}T.One{{/if}}{{/if}}{{delimit}},
+                        {{/each}});
+                }
+            {{/each}}
+        {{/each}}
+        {{each normal in new[] { false, true } }}
+            {{each dim in model.AllSizes.Where(d => d.Columns >= size)}}
+                {{ var matrixType = new { Name = "Matrix", Size = dim }; }}
+                {{each inputSize in model.Sizes.Where(s => s <= size)}}
+                    {{ var inputType = new { Name = "Vector", Size = inputSize }; }}
+
+                    /// <summary>Transforms the given vector by the specified transformation Matrix.</summary>
+                    public static {{@Name thisType}}<T> Transform{{if normal}}Normal{{/if}}<T>({{@Name inputType}}<T> vector, {{@Name matrixType}}<T> matrix)
+                        where T : INumberBase<T>
+                        {{if dim.Rows == inputSize && dim.Columns == size}}
+                            => vector * matrix;
+                        {{else}}
+                            {{
+                                var rows = Enumerable.Range(1, dim.Rows);
+                                var cols = Enumerable.Range(1, dim.Columns);
+                            }}
+                            => new({{each c in Enumerable.Range(1, size)}}
+                                {{each r in Enumerable.Range(1, dim.Rows).Where(r => r <= inputSize || (r == dim.Rows && !normal))}}{{if r <= inputSize}}(vector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.M{{= r}}{{= c}}){{else}}matrix.M{{= r}}{{= c}}{{/if}}{{delimit}} + {{/each}}{{delimit}},{{/each}});
+                        {{/if}}
+                {{/each}}
+            {{/each}}
         {{/each}}
     }
 }
