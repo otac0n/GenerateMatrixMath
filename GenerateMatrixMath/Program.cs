@@ -198,10 +198,20 @@
                 new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Tanh), [Memberwise]),
             };
 
+            var properties = from i in typeof(INumber<>).Assembly.GetTypes()
+                             where i.IsInterface && i.IsGenericTypeDefinition
+                             where i.Namespace == typeof(INumber<>).Namespace
+                             let a = i.GetGenericArguments()
+                             where a.Length == 1
+                             let t = a[0]
+                             from p in i.GetProperties()
+                             where p.PropertyType == t
+                             select new ExtensionProperty(i, p.Name);
+
             var sizes = Enumerable.Range(2, 3);
             var vectorModels =
                 (from d in sizes
-                    select new Model.Vector(d, sizes, dims, casts, numericsTypes, intrinsics, extensions)).ToList();
+                    select new Model.Vector(d, sizes, dims, casts, numericsTypes, intrinsics, extensions, properties)).ToList();
 
             foreach (var outputPath in outputPaths)
             {

@@ -23,21 +23,39 @@ namespace Silk.NET.Maths
     public static partial class {{@Name thisType}}
     {
         /// <summary>Extensions for vectors with elements implementing <see cref="IRootFunctions{TSelf}"/>.</summary>
-        extension<T>({{@Name thisType}}<T> vector)
-            where T : IRootFunctions<T>
+        extension<TSelf>({{@Name thisType}}<TSelf> vector)
+            where TSelf : IRootFunctions<TSelf>
         {
             /// <summary>Gets the length of the vector.</summary>
-            public T Length => T.Sqrt(vector.LengthSquared);
+            public TSelf Length => TSelf.Sqrt(vector.LengthSquared);
         }
 
         /// <summary>Extensions for vectors with elements implementing <see cref="INumberBase{TSelf}"/>.</summary>
-        extension<T>({{@Name thisType}}<T> vector)
-            where T : INumberBase<T>
+        extension<TSelf>({{@Name thisType}}<TSelf> vector)
+            where TSelf : INumberBase<TSelf>
         {
             /// <summary>Gets the length squared of the vector.</summary>
-            public T LengthSquared => {{@Name thisType}}.Dot(vector, vector);
+            public TSelf LengthSquared => {{@Name thisType}}.Dot(vector, vector);
         }
 
+        {{each g in model.ExtensionProperties.GroupBy(p => p.Type)}}
+            {{
+                var inter = g.Key;
+                var t = inter.GetGenericArguments().Single();
+            }}
+            /// <summary>Extensions for vectors with elements implementing <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}"/>.</summary>
+            extension<{{= t}}>({{@Name thisType}}<{{= t}}> vector)
+                where {{= t}} : {{if inter != typeof(System.Numerics.INumberBase<>) && !inter.GetInterfaces().Any(i => i == typeof(System.Numerics.INumberBase<>))}}INumberBase<{{= t}}>, {{/if}}{{: inter}}
+            {
+                {{each p in g}}
+                    /// <summary>Gets a vector with all components set to <see cref="{{= Encode(inter).Replace('<', '{').Replace('>', '}')}}.{{: p.Name}}"/>.</summary>
+                    public static {{@Name thisType}}<{{= t}}> {{= p.Name}} => new({{= t}}.{{= p.Name}});
+                {{delimit}}
+
+                {{/each}}
+            }
+
+        {{/each}}
         /// <summary>Desconstructs a vector into its components.</summary>
         /// <param name="vector">The vector to deconstruct.</param>
         {{each f in fields}}
