@@ -38,6 +38,61 @@ namespace Silk.NET.Maths
             public TSelf LengthSquared => {{@Name thisType}}.Dot(vector, vector);
         }
 
+        /// <summary>Extensions for vectors with elements implementing <see cref="IBitwiseOperators{TSelf, TSelf, TSelf}"/>.</summary>
+        extension<TSelf>({{@Name thisType}}<TSelf> vector)
+            where TSelf : INumberBase<TSelf>, IBitwiseOperators<TSelf, TSelf, TSelf>
+        {
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_OnesComplement"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> OnesComplement({{@Name thisType}}<TSelf> value)
+                => new({{each f in fields}}~value.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseAnd"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left.{{= f}} & right.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left.{{= f}} | right.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left.{{= f}} ^ right.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_BitwiseAnd"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, TSelf right)
+                => new({{each f in fields}}left.{{= f}} & right{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, TSelf right)
+                => new({{each f in fields}}left.{{= f}} | right{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, TSelf right)
+                => new({{each f in fields}}left.{{= f}} ^ right{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseAnd"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseAnd(TSelf left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left & right.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_BitwiseOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> BitwiseOr(TSelf left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left | right.{{= f}}{{delimit}}, {{/each}});
+
+            /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
+            /// <remarks>Applied component-wise to the vector.</remarks>
+            public static {{@Name thisType}}<TSelf> ExclusiveOr(TSelf left, {{@Name thisType}}<TSelf> right)
+                => new({{each f in fields}}left ^ right.{{= f}}{{delimit}}, {{/each}});
+        }
+
         {{each g in model.ExtensionProperties.GroupBy(p => p.Type)}}
             {{
                 var inter = g.Key;
@@ -275,7 +330,7 @@ namespace Silk.NET.Maths
                                 var cols = Enumerable.Range(1, dim.Columns);
                             }}
                             => new({{each c in Enumerable.Range(1, size)}}
-                                {{each r in Enumerable.Range(1, dim.Rows).Where(r => r <= inputSize || (r == dim.Rows && !normal))}}{{if r <= inputSize}}(vector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.M{{= r}}{{= c}}){{else}}matrix.M{{= r}}{{= c}}{{/if}}{{delimit}} + {{/each}}{{delimit}},{{/each}});
+                                {{each r in Enumerable.Range(1, dim.Rows).Where(r => r <= inputSize || (r == dim.Rows && !normal))}}{{if r <= inputSize}}(vector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.M{{= r}}{{= c}}){{else}}matrix.M{{= r}}{{= c}}{{/if}}{{delimit}} + {{/each}}{{delimit}}, {{/each}});
                         {{/if}}
                 {{/each}}
             {{/each}}

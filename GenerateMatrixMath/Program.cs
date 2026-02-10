@@ -198,9 +198,10 @@
                 new(typeof(IHyperbolicFunctions<>), nameof(IHyperbolicFunctions<>.Tanh), [Memberwise]),
             };
 
-            var properties = from i in typeof(INumber<>).Assembly.GetTypes()
+            var properties = from i in typeof(INumberBase<>).Assembly.GetTypes()
                              where i.IsInterface && i.IsGenericTypeDefinition
-                             where i.Namespace == typeof(INumber<>).Namespace
+                             where i != typeof(INumberBase<>)
+                             where i.Namespace == typeof(INumberBase<>).Namespace
                              let a = i.GetGenericArguments()
                              where a.Length == 1
                              let t = a[0]
