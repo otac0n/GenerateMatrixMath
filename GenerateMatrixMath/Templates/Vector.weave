@@ -330,6 +330,14 @@ namespace Silk.NET.Maths
         static bool IParsable<{{@Name thisType}}<T>>.TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out {{@Name thisType}}<T> result) =>
             TryParse(s, provider, out result);
 
+        /// <inheridoc/>
+        public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
+
+        /// <inheridoc/>
+        public bool Equals({{@Name thisType}}<T> other) =>
+            {{each f in fields}}{{= f}}.Equals(other.{{= f}}){{delimit}} &&
+            {{/each}};
+
         /// <summary>Returns a boolean indicating whether the given two vectors are equal.</summary>
         /// <param name="left">The first vector to compare.</param>
         /// <param name="right">The second vector to compare.</param>
@@ -342,13 +350,9 @@ namespace Silk.NET.Maths
         /// <param name="left">The first vector to compare.</param>
         /// <param name="right">The second vector to compare.</param>
         /// <returns><c>true</c> if the given vectors are not equal; <c>false</c> otherwise.</returns>
-        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
-
-        /// <inheridoc/>
-        public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
-
-        /// <inheridoc/>
-        public bool Equals({{@Name thisType}}<T> other) => this == other;
+        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
+            {{each f in fields}}left.{{= f}} != right.{{= f}}{{delimit}} ||
+            {{/each}};
 
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each f in fields}}{{= f}}{{delimit}}, {{/each}});
@@ -390,13 +394,26 @@ namespace Silk.NET.Maths
             {{@Name thisType}}<TOther>.CreateTruncating(this);
 
         /// <summary>Implicitly casts a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
-        public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) v) =>
-            new({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
+        public static implicit operator {{@Name thisType}}<T>(({{each f in fields}}T {{= f}}{{delimit}}, {{/each}}) value) =>
+            new({{each f in fields}}value.{{= f}}{{delimit}}, {{/each}});
 
         /// <summary>Implicitly casts a <see cref="{{@Name thisType}}{T}"/> to a <see cref="ValueTuple{{= "{"}}{{each f in fields}}T{{delimit}}, {{/each}}{{= "}"}}"/>.</summary>
-        public static implicit operator ({{each f in fields}}T {{= f}}{{delimit}}, {{/each}})({{@Name thisType}}<T> v) =>
-            ({{each f in fields}}v.{{= f}}{{delimit}}, {{/each}});
+        public static implicit operator ({{each f in fields}}T {{= f}}{{delimit}}, {{/each}})({{@Name thisType}}<T> value) =>
+            ({{each f in fields}}value.{{= f}}{{delimit}}, {{/each}});
 
+        {{each smaller in model.Sizes.Where(s => s < size)}}
+            {{
+                var smallerType = new { Name = "Vector", Size = smaller };
+            }}
+            /// <summary>Explicitly casts a <see cref="{{@Name thisType}}{T}"/> to a <see cref="{{@Name smallerType}}{T}"/> .</summary>
+            public static explicit operator {{@Name smallerType}}<T>({{@Name thisType}}<T> value) =>
+                new({{each f in Vector.VectorFieldNames.Take(smaller)}}value.{{= f}}{{delimit}}, {{/each}});
+
+            /// <summary>Explicitly casts a <see cref="{{@Name smallerType}}{T}"/> to a <see cref="{{@Name thisType}}{T}"/>.</summary>
+            public static explicit operator {{@Name thisType}}<T>({{@Name smallerType}}<T> value) =>
+                new({{each i in Enumerable.Range(1, size)}}{{if i <= smaller}}value.{{= Vector.VectorFieldNames[i - 1]}}{{else}}T.Zero{{/if}}{{delimit}}, {{/each}});
+
+        {{/each}}
         /// <summary>Returns the given vector.</summary>
         /// <param name="vector">The source vector.</param>
         /// <returns>The source vector.</returns>

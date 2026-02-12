@@ -126,7 +126,9 @@ namespace Silk.NET.Maths
         public override bool Equals(object? obj) => obj is {{@Name thisType}}<T> other && Equals(other);
 
         /// <inheridoc/>
-        public bool Equals({{@Name thisType}}<T> other) => this == other;
+        public bool Equals({{@Name thisType}}<T> other) =>
+            {{each r in rows}}Row{{= r}}.Equals(other.Row{{= r}}){{delimit}} &&
+            {{/each}};
 
         /// <inheridoc/>
         public override int GetHashCode() => HashCode.Combine({{each r in rows}}Row{{= r}}{{delimit}}, {{/each}});
@@ -192,7 +194,9 @@ namespace Silk.NET.Maths
         /// <param name="left">The first matrix to compare.</param>
         /// <param name="right">The second matrix to compare.</param>
         /// <returns><c>true</c> if the given matrices are not equal; <c>false</c> otherwise.</returns>
-        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) => !(left == right);
+        public static bool operator !=({{@Name thisType}}<T> left, {{@Name thisType}}<T> right) =>
+            {{each r in rows}}left.Row{{= r}} != right.Row{{= r}}{{delimit}} ||
+            {{/each}};
 
         /// <summary>Adds two matrices together.</summary>
         /// <param name="left">The first source matrix.</param>

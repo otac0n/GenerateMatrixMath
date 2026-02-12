@@ -44,53 +44,53 @@ namespace Silk.NET.Maths
         {
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_OnesComplement"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> OnesComplement({{@Name thisType}}<TSelf> value)
-                => new({{each f in fields}}~value.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> OnesComplement({{@Name thisType}}<TSelf> value) =>
+                new({{each f in fields}}~value.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseAnd"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left.{{= f}} & right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left.{{= f}} & right.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left.{{= f}} | right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left.{{= f}} | right.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left.{{= f}} ^ right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left.{{= f}} ^ right.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_BitwiseAnd"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, TSelf right)
-                => new({{each f in fields}}left.{{= f}} & right{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseAnd({{@Name thisType}}<TSelf> left, TSelf right) =>
+                new({{each f in fields}}left.{{= f}} & right{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, TSelf right)
-                => new({{each f in fields}}left.{{= f}} | right{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseOr({{@Name thisType}}<TSelf> left, TSelf right) =>
+                new({{each f in fields}}left.{{= f}} | right{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, TSelf right)
-                => new({{each f in fields}}left.{{= f}} ^ right{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> ExclusiveOr({{@Name thisType}}<TSelf> left, TSelf right) =>
+                new({{each f in fields}}left.{{= f}} ^ right{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_BitwiseAnd"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseAnd(TSelf left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left & right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseAnd(TSelf left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left & right.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf,TSelf}.op_BitwiseOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> BitwiseOr(TSelf left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left | right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> BitwiseOr(TSelf left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left | right.{{= f}}{{delimit}}, {{/each}});
 
             /// <inheritdoc cref="IBitwiseOperators{TSelf, TSelf, TSelf}.op_ExclusiveOr"/>
             /// <remarks>Applied component-wise to the vector.</remarks>
-            public static {{@Name thisType}}<TSelf> ExclusiveOr(TSelf left, {{@Name thisType}}<TSelf> right)
-                => new({{each f in fields}}left ^ right.{{= f}}{{delimit}}, {{/each}});
+            public static {{@Name thisType}}<TSelf> ExclusiveOr(TSelf left, {{@Name thisType}}<TSelf> right) =>
+                new({{each f in fields}}left ^ right.{{= f}}{{delimit}}, {{/each}});
         }
 
         {{each g in model.ExtensionProperties.GroupBy(p => p.Type)}}
@@ -139,25 +139,25 @@ namespace Silk.NET.Maths
 
         /// <summary>Normalizes a vector.</summary>
         public static {{@Name thisType}}<T> Normalize<T>(this {{@Name thisType}}<T> vector)
-            where T : IRootFunctions<T>
-            => vector / vector.Length;
+            where T : IRootFunctions<T> =>
+            vector / vector.Length;
 
         /// <summary>Returns the Euclidean distance between the two given points.</summary>
-        /// <param name="value1">The first point.</param>
-        /// <param name="value2">The second point.</param>
+        /// <param name="start">The starting point.</param>
+        /// <param name="end">The ending point.</param>
         /// <returns>The distance.</returns>
-        public static T Distance<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+        public static T Distance<T>({{@Name thisType}}<T> start, {{@Name thisType}}<T> end)
             where T : IRootFunctions<T> =>
-            T.Sqrt(DistanceSquared(value1, value2));
+            T.Sqrt(DistanceSquared(start, end));
 
         /// <summary>Returns the Euclidean distance squared between the two given points.</summary>
-        /// <param name="value1">The first point.</param>
-        /// <param name="value2">The second point.</param>
+        /// <param name="start">The starting point.</param>
+        /// <param name="end">The ending point.</param>
         /// <returns>The distance squared.</returns>
-        public static T DistanceSquared<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2)
+        public static T DistanceSquared<T>({{@Name thisType}}<T> start, {{@Name thisType}}<T> end)
             where T : INumberBase<T>
         {
-            var difference = value1 - value2;
+            var difference = end - start;
             return Dot(difference, difference);
         }
 
@@ -182,21 +182,21 @@ namespace Silk.NET.Maths
             {{each storage in new[] { 64, 128, 256, 512 } }}
                 {{if bitSize <= storage}}
                     /// <summary>Converts a <see cref="{{@Name thisType}}{T}"/> to a <see cref="Vector{{= storage}}{T}"/>.</summary>
-                    public static Vector{{= storage}}<{{: intrinsic}}> ToVector{{= storage}}({{@Name thisType}}<{{: intrinsic}}> vector)
-                        => Vector{{= storage}}.Create({{each i in Enumerable.Range(1, storage / (byteSize * 8))}}{{if i <= size}}vector.{{= Vector.VectorFieldNames[i - 1]}}{{else}}({{: intrinsic}})0{{/if}}{{delimit}}, {{/each}});
+                    public static Vector{{= storage}}<{{: intrinsic}}> ToVector{{= storage}}(this {{@Name thisType}}<{{: intrinsic}}> vector) =>
+                        Vector{{= storage}}.Create({{each i in Enumerable.Range(1, storage / (byteSize * 8))}}{{if i <= size}}vector.{{= Vector.VectorFieldNames[i - 1]}}{{else}}({{: intrinsic}})0{{/if}}{{delimit}}, {{/each}});
 
                 {{/if}}
             {{/each}}
         {{/each}}
         /// <summary>Linearly interpolates between two vectors using a scalar t-value (clamped between 0 and 1).</summary>
-        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, T amount)
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, T amount)
             where T : IFloatingPointIeee754<T> =>
-            Lerp(a, b, T.Clamp(amount, T.Zero, T.One));
+            Lerp(value1, value2, T.Clamp(amount, T.Zero, T.One));
 
         /// <summary>Linearly interpolates between two vectors using a vector t-value (clamped between 0 and 1).</summary>
-        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> a, {{@Name thisType}}<T> b, {{@Name thisType}}<T> amount)
+        public static {{@Name thisType}}<T> LerpClamped<T>({{@Name thisType}}<T> value1, {{@Name thisType}}<T> value2, {{@Name thisType}}<T> amount)
             where T : IFloatingPointIeee754<T> =>
-            new({{each f in fields}}T.Lerp(a.{{= f}}, b.{{= f}}, T.Clamp(amount.{{= f}}, T.Zero, T.One)){{delimit}},
+            new({{each f in fields}}T.Lerp(value1.{{= f}}, value2.{{= f}}, T.Clamp(amount.{{= f}}, T.Zero, T.One)){{delimit}},
                 {{/each}});
 
         /// <summary>Applies <see cref="ITrigonometricFunctions{TSelf}.SinCos(TSelf)"/> to the provided arguments.</summary>
@@ -321,16 +321,16 @@ namespace Silk.NET.Maths
 
                     /// <summary>Transforms the given vector by the specified transformation Matrix.</summary>
                     public static {{@Name thisType}}<T> Transform{{if normal}}Normal{{/if}}<T>({{@Name inputType}}<T> vector, {{@Name matrixType}}<T> matrix)
-                        where T : INumberBase<T>
+                        where T : INumberBase<T> =>
                         {{if dim.Rows == inputSize && dim.Columns == size}}
-                            => vector * matrix;
+                            vector * matrix;
                         {{else}}
                             {{
                                 var rows = Enumerable.Range(1, dim.Rows);
                                 var cols = Enumerable.Range(1, dim.Columns);
                             }}
-                            => new({{each c in Enumerable.Range(1, size)}}
-                                {{each r in Enumerable.Range(1, dim.Rows).Where(r => r <= inputSize || (r == dim.Rows && !normal))}}{{if r <= inputSize}}(vector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.M{{= r}}{{= c}}){{else}}matrix.M{{= r}}{{= c}}{{/if}}{{delimit}} + {{/each}}{{delimit}}, {{/each}});
+                            new({{each c in Enumerable.Range(1, size)}}{{each r in Enumerable.Range(1, dim.Rows).Where(r => r <= inputSize || (r == dim.Rows && !normal))}}{{if r <= inputSize}}(vector.{{= Vector.VectorFieldNames[r - 1]}} * matrix.M{{= r}}{{= c}}){{else}}matrix.M{{= r}}{{= c}}{{/if}}{{delimit}} + {{/each}}{{delimit}},
+                                {{/each}});
                         {{/if}}
                 {{/each}}
             {{/each}}
