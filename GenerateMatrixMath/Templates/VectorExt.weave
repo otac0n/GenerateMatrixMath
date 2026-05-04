@@ -8,6 +8,8 @@
     var size = model.Size;
     var fields = Vector.VectorFieldNames.Take(size);
     var thisType = new { Name = "Vector", model.Size };
+    var numericsName = "Vector" + model.Size;
+    var generateNumericsCast = model.NumericsTypes.Any(t => t.Name == numericsName);
 }}
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
@@ -176,6 +178,13 @@ namespace Silk.NET.Maths
             where T : IFloatingPoint<T> =>
             {{@Name thisType}}.Ceiling(vector).AsChecked<int>();
 
+        {{if generateNumericsCast}}
+            /// <summary>Converts a <see cref="{{@Name thisType}}{T}"/> to <see cref="{{= numericsName}}"/>.</summary>
+            public static {{= numericsName}} ToNumerics<T>(this {{@Name thisType}}<T> from)
+                where T : INumberBase<T> =>
+                ({{= numericsName}})from;
+
+        {{/if}}
         {{each intrinsic in model.Intrinsics}}
             {{ var byteSize = Marshal.SizeOf(intrinsic); }}
             {{ var bitSize = byteSize * size * 8; }}
